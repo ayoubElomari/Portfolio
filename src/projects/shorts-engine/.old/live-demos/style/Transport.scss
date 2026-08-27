@@ -1,0 +1,189 @@
+/* The transport, shared by all three demo sizes.
+ *
+ * The one rule that shapes it: the buttons and the readout stay on ONE line at
+ * every width. They used to wrap onto separate rows on a phone, which read as two
+ * unrelated control strips instead of one transport. The scrubber is allowed to
+ * take its own row; the controls are not. */
+
+.rt-transport {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--pp-rule);
+  background: var(--pp-surface-raised);
+}
+
+.rt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.rt-play,
+.rt-btn {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--pp-rule);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--pp-body);
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--rendr-accent);
+    color: var(--pp-ink);
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--rendr-accent);
+    outline-offset: 2px;
+  }
+}
+
+.rt-play {
+  width: 34px;
+  height: 30px;
+  background: var(--rendr-accent);
+  border-color: var(--rendr-accent);
+  color: var(--pp-on-accent);
+
+  &:hover:not(:disabled) {
+    background: var(--rendr-accent-bright);
+    border-color: var(--rendr-accent-bright);
+    color: var(--pp-on-accent);
+  }
+}
+
+/* Tabular figures and a fixed slot per field, so counting doesn't shift the row. */
+.rt-readout {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-left: auto;
+  font-family: var(--code-font);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rt-frame {
+  color: var(--rendr-accent);
+}
+
+.rt-total,
+.rt-time {
+  color: var(--pp-whisper);
+}
+
+/**
+ * The speed toggle, wearing the output settings' chip.
+ *
+ * It is the same *kind* of control as the fps and ratio chips — a setting with an
+ * on state, not an action — so it reads as one. Kept to a single 2× toggle rather
+ * than a cycle through four rates: a cycling button makes you click through states
+ * you don't want to find the one you do, and the interesting claim is only that
+ * speed is free at all, which one toggle makes as well as four.
+ */
+.rt-rate {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rt-cost {
+  flex: 0 0 auto;
+  padding-left: 10px;
+  color: var(--pp-faint);
+  font-family: var(--code-font);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+  white-space: nowrap;
+
+  em {
+    font-style: normal;
+    opacity: 0.65;
+  }
+}
+
+.rt-range-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+/* Group-of-pictures boundaries, drawn behind the scrubber. */
+.rt-marks {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 9px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.rt-mark {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: color-mix(in srgb, var(--rendr-accent) 55%, transparent);
+}
+
+.rt-range {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--rendr-accent);
+  cursor: ew-resize;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 620px) {
+  .rt-time {
+    /* First thing to go: frame number and total carry the meaning. */
+    display: none;
+  }
+
+  .rt-cost {
+    display: none;
+  }
+
+  .rt-play,
+  .rt-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .rt-play {
+    width: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-play,
+  .rt-btn {
+    transition: none;
+  }
+}

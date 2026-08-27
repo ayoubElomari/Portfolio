@@ -1,0 +1,17 @@
+{
+  "name": "rendr-live-demos",
+  "version": "1.0.0",
+  "description": "Three sizes of interactive Rendr demo — bench, medium, mini — as React components. Compositions are supplied by the host.",
+  "type": "module",
+  "sideEffects": [
+    "*.scss"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "//rendr-web": "Not a package dependency: four files import the runtime by relative path (`../rendr-web/...`), so this folder expects `rendr-web/` as a SIBLING directory. Copy both, keep them adjacent. See README.md — the alternative, a bare `rendr-web` specifier, would need an alias or a workspace in every consuming project, which is more setup than dropping in two folders."
+}

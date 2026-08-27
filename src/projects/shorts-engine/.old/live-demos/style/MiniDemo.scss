@@ -1,0 +1,403 @@
+@use "./Transport.scss";
+
+/* The small demos in the article body.
+ *
+ * Same rule as the bench: no literal colours. Everything resolves to `--rendr-*`
+ * from `../../theme.js` or the page template's `--pp-*` layer. */
+
+.rendr-mini {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid var(--pp-rule);
+  border-radius: 4px;
+  background: var(--pp-surface);
+  overflow: hidden;
+}
+
+/* ── the cropped file ────────────────────────────────────────────────────── */
+
+.rm-code {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-right: 1px solid var(--pp-rule);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pp-rule) transparent;
+}
+
+.rm-block {
+  font-family: var(--code-font);
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+
+/* Says what this block is for. Lives above the code rather than inside it, so it
+   never reads as part of the file. */
+.rm-block-label {
+  display: block;
+  padding: 0 14px 5px 52px;
+  color: var(--pp-whisper);
+  font-family: var(--secondary-font);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Between two blocks that are far apart in the file. */
+.rm-gap {
+  display: block;
+  padding: 0 0 6px 52px;
+  color: var(--pp-whisper);
+  letter-spacing: 0.3em;
+  user-select: none;
+}
+
+.rm-row {
+  display: flex;
+  white-space: pre;
+  color: var(--pp-muted);
+}
+
+.rm-gutter {
+  flex: 0 0 auto;
+  width: 40px;
+  padding-right: 12px;
+  text-align: right;
+  color: var(--pp-whisper);
+  opacity: 0.5;
+  user-select: none;
+}
+
+.rm-text {
+  flex: 1;
+  min-width: 0;
+  padding-right: 14px;
+}
+
+.rm-key {
+  color: var(--rendr-accent-bright);
+}
+
+.rm-val {
+  color: var(--pp-body);
+}
+
+.rm-row-elide .rm-text {
+  color: var(--pp-whisper);
+}
+
+/* The line carrying the control. */
+.rm-row.is-edit {
+  color: var(--pp-ink);
+  background: color-mix(in srgb, var(--rendr-accent) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--rendr-accent);
+}
+
+.rm-note {
+  margin: 6px 14px 0 52px;
+  color: var(--pp-whisper);
+  font-family: var(--secondary-font);
+  font-size: 0.68rem;
+  line-height: 1.6;
+  max-width: 46ch;
+}
+
+.rm-quote {
+  color: var(--pp-whisper);
+}
+
+.rm-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  input,
+  select {
+    padding: 1px 4px;
+    border: 1px solid var(--rendr-accent-deep);
+    border-radius: 2px;
+    background: var(--rendr-accent-dim);
+    color: var(--rendr-accent-bright);
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+    line-height: 1.4;
+
+    &:hover {
+      border-color: var(--rendr-accent);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--rendr-accent);
+      box-shadow: 0 0 0 1px var(--rendr-accent);
+    }
+  }
+
+  select {
+    cursor: pointer;
+    padding-right: 2px;
+  }
+
+  input[type="color"] {
+    width: 22px;
+    height: 16px;
+    padding: 1px;
+    cursor: pointer;
+  }
+}
+
+.rm-hex {
+  color: var(--rendr-accent-bright);
+}
+
+/* ── the picture ─────────────────────────────────────────────────────────── */
+
+.rm-view {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rm-stage-viewport {
+  position: relative;
+  width: 100%;
+  /* Capped for the same reason as the bench: a portrait composition must not turn
+     a small in-article figure into a full-screen one. */
+  max-height: 340px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--rendr-accent);
+    outline-offset: -2px;
+  }
+}
+
+.rm-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* Before the engine boots. Deliberately just a tone, not a spinner — the wait is
+   a few hundred milliseconds and a spinner would advertise it. */
+.rm-idle {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  background: linear-gradient(
+    180deg,
+    var(--rendr-accent-dim) 0%,
+    #000 70%
+  );
+}
+
+.rm-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 16px;
+  color: var(--rendr-accent-bright);
+  font-family: var(--code-font);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.rm-transport {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-top: 1px solid var(--pp-rule);
+  background: var(--pp-surface-raised);
+}
+
+.rm-range {
+  flex: 1;
+  min-width: 90px;
+  accent-color: var(--rendr-accent);
+  cursor: ew-resize;
+}
+
+.rm-btn {
+  padding: 4px 11px;
+  border: 1px solid var(--pp-rule);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--pp-body);
+  font-family: var(--secondary-font);
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--rendr-accent);
+    color: var(--pp-ink);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--rendr-accent);
+    outline-offset: 2px;
+  }
+}
+
+.rm-btn-primary {
+  background: var(--rendr-accent);
+  border-color: var(--rendr-accent);
+  color: var(--pp-on-accent);
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    background: var(--rendr-accent-bright);
+    border-color: var(--rendr-accent-bright);
+    color: var(--pp-on-accent);
+  }
+}
+
+.rm-readout {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--code-font);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rm-readout-frame {
+  color: var(--rendr-accent);
+}
+
+.rm-readout-total,
+.rm-readout-time {
+  color: var(--pp-whisper);
+}
+
+/* ── narrow ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 760px) {
+  .rendr-mini {
+    grid-template-columns: 1fr;
+  }
+
+  .rm-code {
+    order: 2;
+    border-right: 0;
+    border-top: 1px solid var(--pp-rule);
+  }
+
+  .rm-view {
+    order: 1;
+  }
+}
+
+/* ── fps chips ───────────────────────────────────────────────────────────── */
+
+.rm-fps {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 7px 12px;
+  border-top: 1px solid var(--pp-rule);
+  background: var(--pp-surface);
+}
+
+.rm-fps-label {
+  color: var(--pp-whisper);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.rm-chip {
+  padding: 2px 8px;
+  border: 1px solid var(--pp-rule);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--pp-faint);
+  font-family: var(--code-font);
+  font-size: 0.64rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--rendr-accent);
+    color: var(--pp-ink);
+  }
+
+  &.is-on {
+    border-color: var(--rendr-accent);
+    background: var(--rendr-accent-dim);
+    color: var(--rendr-accent-bright);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.rm-fps-note {
+  margin-left: auto;
+  color: var(--pp-whisper);
+  font-family: var(--code-font);
+  font-size: 0.62rem;
+}
+
+/* ── group-of-pictures markers, and what a frame cost ────────────────────── */
+
+.rm-range-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+}
+
+.rm-gops {
+  position: absolute;
+  inset: 0 8px;
+  pointer-events: none;
+}
+
+.rm-gop {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 11px;
+  margin-top: -9px;
+  background: var(--rendr-accent);
+  opacity: 0.4;
+}
+
+.rm-cost {
+  color: var(--rendr-accent-bright);
+  font-family: var(--code-font);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+
+  em {
+    color: var(--pp-whisper);
+    font-style: normal;
+    margin-left: 2px;
+  }
+}

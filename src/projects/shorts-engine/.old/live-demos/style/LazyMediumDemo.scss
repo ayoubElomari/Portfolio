@@ -1,0 +1,39 @@
+/* The placeholder a medium demo arrives into — see LazyMiniDemo.scss for the
+ * general shape of this file. `.rendr-medium` never restructures across
+ * breakpoints (unlike the mini demo's column collapse), just resizes, so one
+ * height covers every width. Estimated from a 460px capped stage plus its
+ * transport, fps row and a two-edit code block underneath. */
+
+.md-lazy-slot {
+  width: 100%;
+}
+
+.md-lazy-skeleton {
+  height: 700px;
+  border: 1px solid var(--pp-rule);
+  border-radius: 4px;
+  background:
+    linear-gradient(
+      110deg,
+      var(--pp-surface) 30%,
+      var(--pp-surface-raised) 50%,
+      var(--pp-surface) 70%
+    );
+  background-size: 220% 100%;
+  animation: md-lazy-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes md-lazy-shimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-lazy-skeleton {
+    animation: none;
+  }
+}

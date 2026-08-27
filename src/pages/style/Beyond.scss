@@ -1,0 +1,151 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   /beyond — the idea index.
+
+   Reuses the project template's canvas measurements (`--pp-max`,
+   `--pp-gutter`) so the page lines up with `/project/:slug` and the site
+   chrome, but it is a listing, not a case study: no rail, no reading
+   measure, just a masthead and topic groups of teaser tiles.
+   ───────────────────────────────────────────────────────────────────────── */
+.beyond-page {
+  --pp-max: 1360px;
+  --pp-gutter: clamp(20px, 5vw, 72px);
+
+  width: 100%;
+  max-width: var(--pp-max);
+  margin-inline: auto;
+  /* Top padding has to clear the site header, which is `position: fixed`,
+     ~113px tall and opaque, and does NOT hide on scroll on this route (only
+     `/beyond/:slug` does). Anything below ~128px here starts underneath it. */
+  padding: clamp(128px, 14vh, 152px) var(--pp-gutter) clamp(80px, 12vh, 140px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(44px, 6vh, 72px);
+
+  /* ── Masthead ───────────────────────────────────────────────────────── */
+  /* Deliberately kept at display scale — it's the page's identity. What was
+     trimmed instead is its *height*: the intro moves out of the stack and up
+     beside the title, the type steps down, and the spacing tightens, so the
+     first row of cards clears the fold on a laptop instead of sitting a full
+     screen below it. */
+  .beyond-masthead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding-bottom: clamp(20px, 2.8vh, 30px);
+    border-bottom: 1px solid var(--border-color);
+
+    .masthead-title {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .accent-icon {
+      width: 36px;
+      height: auto;
+    }
+
+    .beyond-heading {
+      font-family: var(--primary-font);
+      font-size: clamp(2.75rem, 7vw, 5.75rem);
+      font-weight: 600;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      color: var(--primary-color);
+      text-transform: uppercase;
+    }
+
+    .beyond-intro {
+      max-width: 34rem;
+      font-family: var(--article-font);
+      font-size: clamp(1rem, 1.15vw, 1.125rem);
+      font-weight: 300;
+      line-height: 1.6;
+      color: var(--third-color);
+      text-wrap: pretty;
+    }
+
+    /* Side by side once there's room for it. `align-items: end` drops the
+       intro's last line onto the heading's baseline rather than floating it
+       at the top of a much taller cell. */
+    @media screen and (min-width: 900px) {
+      grid-template-columns: auto minmax(0, 34rem);
+      justify-content: space-between;
+      align-items: end;
+      column-gap: clamp(40px, 6vw, 96px);
+
+      .beyond-intro {
+        padding-bottom: 6px;
+      }
+    }
+  }
+
+  .beyond-empty {
+    font-family: var(--article-font);
+    font-size: 1.0625rem;
+    font-weight: 300;
+    color: var(--third-color);
+  }
+
+  /* ── Topic group ────────────────────────────────────────────────────── */
+  .beyond-group {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(22px, 3vh, 34px);
+
+    .group-rule {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+
+      .group-title {
+        font-family: var(--secondary-font);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--primary-color);
+      }
+
+      .group-count {
+        font-family: var(--secondary-font);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        font-variant-numeric: tabular-nums;
+        color: var(--accent-color);
+      }
+
+      .group-hair {
+        flex: 1;
+        height: 1px;
+        align-self: center;
+        background: linear-gradient(
+          to right,
+          var(--accent-color),
+          var(--border-color) 14%,
+          var(--border-color)
+        );
+      }
+    }
+  }
+
+  /* ── Tile grid ──────────────────────────────────────────────────────── */
+  /* `auto-fill` rather than `auto-fit`: a group holding a single idea should
+     read as one tile in a row of empty tracks, not as one tile stretched to
+     the full page width. */
+  .beyond-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+    gap: clamp(16px, 2vw, 26px);
+    align-items: stretch;
+  }
+
+  @media screen and (max-width: 599px) {
+    .beyond-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

@@ -1,0 +1,287 @@
+/* The medium demo: player, controls, snippet — stacked, in that order.
+ *
+ * No literal colours, same rule as everywhere else in this folder. */
+
+@use "./Transport.scss";
+
+.rendr-medium {
+  border: 1px solid var(--pp-rule);
+  border-radius: 4px;
+  background: var(--pp-surface);
+  overflow: hidden;
+}
+
+/* ── the player ──────────────────────────────────────────────────────────── */
+
+.md-stage-viewport {
+  position: relative;
+  width: 100%;
+  /* Capped so a portrait composition can't grow to fill a desktop screen. The
+     stage is fitted *inside* this box by `useStageFit`, so whatever is left over
+     reads as letterboxing rather than as a layout bug. */
+  max-height: 460px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+  /* The whole surface is a play/pause target, so a double-click shouldn't select
+     the frame's text as if it were a document. */
+  user-select: none;
+  -webkit-user-select: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--rendr-accent);
+    outline-offset: -2px;
+  }
+}
+
+.md-stage {
+  position: absolute;
+  inset: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.md-idle {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--rendr-accent-dim) 0%, #000 70%);
+}
+
+.md-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 20px;
+  color: var(--rendr-accent-bright);
+  font-family: var(--code-font);
+  font-size: 0.74rem;
+  text-align: center;
+}
+
+/* The engine's own loading signal, surfaced. */
+.md-loading {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 11px 5px 9px;
+  border-radius: 50px;
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(6px);
+  color: var(--pp-ink);
+  font-family: var(--code-font);
+  font-size: 0.68rem;
+  pointer-events: none;
+}
+
+.md-spinner {
+  width: 11px;
+  height: 11px;
+  border: 2px solid color-mix(in srgb, var(--rendr-accent) 35%, transparent);
+  border-top-color: var(--rendr-accent);
+  border-radius: 50%;
+  animation: md-spin 0.7s linear infinite;
+}
+
+@keyframes md-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── fps ─────────────────────────────────────────────────────────────────── */
+
+.md-fps {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-top: 1px solid var(--pp-rule);
+  background: var(--pp-surface);
+}
+
+.md-fps-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--pp-whisper);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.md-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--pp-rule);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--pp-faint);
+  font-family: var(--code-font);
+  font-size: 0.66rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--rendr-accent);
+    color: var(--pp-ink);
+  }
+
+  &.is-on {
+    border-color: var(--rendr-accent);
+    background: var(--rendr-accent-dim);
+    color: var(--rendr-accent-bright);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--rendr-accent);
+    outline-offset: 2px;
+  }
+}
+
+.md-fps-note {
+  margin-left: auto;
+  color: var(--pp-whisper);
+  font-family: var(--code-font);
+  font-size: 0.64rem;
+}
+
+/* ── the snippet ─────────────────────────────────────────────────────────── */
+
+.md-code {
+  padding: 12px 0;
+  border-top: 1px solid var(--pp-rule);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pp-rule) transparent;
+}
+
+.md-block {
+  font-family: var(--code-font);
+  font-size: 0.72rem;
+  line-height: 1.85;
+}
+
+.md-gap {
+  display: block;
+  padding: 2px 0 6px 56px;
+  color: var(--pp-whisper);
+  letter-spacing: 0.3em;
+  user-select: none;
+}
+
+.md-row {
+  display: flex;
+  white-space: pre;
+  color: var(--pp-muted);
+}
+
+.md-gutter {
+  flex: 0 0 auto;
+  width: 40px;
+  padding-right: 12px;
+  text-align: right;
+  color: var(--pp-whisper);
+  opacity: 0.5;
+  user-select: none;
+}
+
+.md-text {
+  flex: 1;
+  min-width: 0;
+  padding-right: 14px;
+}
+
+.md-key {
+  color: var(--rendr-accent-bright);
+}
+
+.md-val {
+  color: var(--pp-body);
+}
+
+.md-row-elide .md-text {
+  color: var(--pp-whisper);
+}
+
+.md-row.is-edit {
+  color: var(--pp-ink);
+  background: color-mix(in srgb, var(--rendr-accent) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--rendr-accent);
+}
+
+.md-quote {
+  color: var(--pp-whisper);
+}
+
+.md-hex {
+  color: var(--rendr-accent-bright);
+}
+
+.md-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  input {
+    padding: 1px 5px;
+    border: 1px solid var(--rendr-accent-deep);
+    border-radius: 2px;
+    background: var(--rendr-accent-dim);
+    color: var(--rendr-accent-bright);
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--rendr-accent);
+      box-shadow: 0 0 0 1px var(--rendr-accent);
+    }
+  }
+
+  input[type="color"] {
+    width: 22px;
+    height: 16px;
+    padding: 1px;
+    cursor: pointer;
+  }
+}
+
+.md-note {
+  margin: 0;
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--pp-rule);
+  color: var(--pp-whisper);
+  font-family: var(--secondary-font);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 620px) {
+  .md-stage-viewport {
+    max-height: 52vh;
+  }
+
+  .md-gutter {
+    width: 32px;
+    padding-right: 8px;
+  }
+
+  .md-block {
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-spinner {
+    animation-duration: 2.4s;
+  }
+}

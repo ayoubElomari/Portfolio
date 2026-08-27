@@ -1,0 +1,98 @@
+.se-pipeline {
+  padding: 32px 24px;
+  overflow-x: auto;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  &__step {
+    display: flex;
+    align-items: center;
+  }
+
+  &__node {
+    font-family: var(--secondary-font);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--pp-ink, #faeada);
+    background: color-mix(in srgb, var(--pp-accent, #ff6a3d) 14%, transparent);
+    border: 1px solid var(--pp-accent, #ff6a3d);
+    border-radius: 999px;
+    padding: 10px 20px;
+    white-space: nowrap;
+
+    &--ghost {
+      background: transparent;
+      border-color: var(--pp-rule, rgba(250, 234, 218, 0.25));
+      color: var(--pp-muted, rgba(250, 234, 218, 0.6));
+      font-size: 12px;
+      padding: 8px 16px;
+    }
+  }
+
+  &__arrow {
+    width: 36px;
+    height: 2px;
+    margin: 0 6px;
+    background: var(--pp-rule, rgba(250, 234, 218, 0.3));
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--pp-rule, rgba(250, 234, 218, 0.3));
+      border-top: 2px solid var(--pp-rule, rgba(250, 234, 218, 0.3));
+      transform: translateY(-50%) rotate(45deg);
+    }
+  }
+
+  &__feedback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  &__feedback-line {
+    width: 60px;
+    height: 1px;
+    background: repeating-linear-gradient(
+      to right,
+      var(--pp-muted, rgba(250, 234, 218, 0.4)) 0 6px,
+      transparent 6px 12px
+    );
+  }
+
+  @media (max-width: 640px) {
+    &__row {
+      flex-direction: column;
+    }
+
+    &__step {
+      flex-direction: column;
+    }
+
+    &__arrow {
+      width: 2px;
+      height: 24px;
+      margin: 4px 0;
+
+      &::after {
+        right: 50%;
+        top: 100%;
+        transform: translateX(50%) rotate(135deg);
+      }
+    }
+  }
+}

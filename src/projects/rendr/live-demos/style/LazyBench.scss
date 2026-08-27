@@ -1,0 +1,52 @@
+/* The placeholder the bench arrives into.
+ *
+ * Its only job is to be the same height as the thing replacing it, so the article
+ * below doesn't jump when the chunk lands. The heights are the bench's measured
+ * ones at each breakpoint — if the bench's own layout changes materially, these
+ * need to follow, and the tell is content shifting on first load. */
+
+/* No padding here on purpose: `.rendr-bench` already sets `padding: 0 --pp-gutter`
+   on itself, and putting it on the wrapper too would inset the real demo twice.
+   Only the placeholder needs it, since it stands in for the bench's inner shell. */
+.rb-lazy-skeleton {
+  height: 820px;
+  /* Centred and capped like the bench's shell, and inset from the screen edge by
+     the same gutter the bench applies to itself — expressed as width rather than
+     margin so the cap and the centring both still work. */
+  width: calc(100% - 2 * var(--pp-gutter, 24px));
+  max-width: var(--pp-max, 1400px);
+  margin: 0 auto;
+  border: 1px solid var(--pp-rule);
+  border-radius: 4px;
+  background:
+    linear-gradient(
+      110deg,
+      var(--pp-surface) 30%,
+      var(--pp-surface-raised) 50%,
+      var(--pp-surface) 70%
+    );
+  background-size: 220% 100%;
+  animation: rb-lazy-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Mobile stacks the bench into two screens, which is taller. */
+@media (max-width: 900px) {
+  .rb-lazy-skeleton {
+    height: 1180px;
+  }
+}
+
+@keyframes rb-lazy-shimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-lazy-skeleton {
+    animation: none;
+  }
+}

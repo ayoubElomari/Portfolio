@@ -1,0 +1,1568 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  Namespaced under .rendr-bench-test — deliberately, and not for tidiness.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ *  `src/lib/projects.js` globs every project's page eagerly, so EVERY project's
+ *  CSS is present on EVERY page. This folder is a copy of `src/projects/rendr/`,
+ *  which means two byte-identical stylesheets ship the same `.rb-*` class names,
+ *  and the one that happens to evaluate last wins every rule they share.
+ *  Alphabetically that is `rendr`, not `rendr-test` — so before this wrapper
+ *  existed, every change made in here was silently overridden by the real
+ *  project's copy. The symptom is nasty: the source says one thing, the computed
+ *  style says another, and a reload doesn't fix it. (Found exactly that way: two
+ *  `.rb-inspector-empty` rules in two <style> tags, the second undoing the first.)
+ *
+ *  The wrapper adds one class of specificity, so rules here outrank the copy
+ *  regardless of order. When these changes are ported back into `rendr`, unwrap
+ *  it — there it is the only copy and the namespace is just noise.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Stays at the file root: `@use` is a module load, not a rule, and Sass rejects it
+   anywhere but the top of a file. So Transport.scss is NOT covered by the wrapper
+   below and its `.rt-*` rules still collide with the copy in `src/projects/rendr/`.
+   That is currently harmless because nothing in here changes them — if that stops
+   being true, that file needs the same treatment rather than a workaround here. */
+@use "./Transport.scss";
+
+.rendr-bench-test {
+  /* The bench — the full-width demo above the article.
+   *
+   * Every colour here resolves to a custom property defined in `../../theme.js`
+   * (the `--rendr-*` family) or to the page template's own `--pp-*` layer. There
+   * are no literal colours in this file on purpose: changing the project's purple
+   * is meant to be one edit in one file, not a search across stylesheets.
+   *
+   * The demo slot is deliberately bare — no padding, no max width — so the inset
+   * and the cap are ours to set. */
+
+  &.rendr-bench {
+    padding: 0 var(--pp-gutter);
+    font-family: var(--secondary-font);
+  }
+
+  .rb-shell {
+    max-width: var(--pp-max);
+    margin: 0 auto;
+    border: 1px solid var(--pp-rule);
+    border-radius: 4px;
+    background: var(--pp-surface);
+    overflow: hidden;
+  }
+
+  /* ── top bar ─────────────────────────────────────────────────────────────── */
+
+  /* Every bar and panel head in this demo is a <div>, never a <header>. The site
+     styles the bare `header` element globally as `position: fixed; z-index: 1000;
+     width: 100%`, so a semantic <header> here silently leaves the flow and paints
+     itself across the top of the page. This cost a debugging round already —
+     the tell was a panel head measuring 1265px wide inside a 681px panel. */
+  .rb-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--pp-rule);
+    background: var(--pp-surface-raised);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+
+  .rb-bar-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--pp-body);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .rb-bar-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--rendr-accent);
+    box-shadow: 0 0 0 0 var(--rendr-accent);
+    animation: rb-pulse 2.4s var(--easing) infinite;
+  }
+
+
+  .rb-bar-spec {
+    margin-left: auto;
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+  }
+
+  /* ── the two panes ───────────────────────────────────────────────────────── */
+
+  /* `start`, not the default `stretch`, so the row takes the stage panel's natural
+     height (header + a 16:9 viewport) instead of stretching the panel and leaving
+     the aspect-ratio box to overflow it. The file column is stretched back to that
+     height explicitly. */
+  .rb-main {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+
+  /* The stage's aspect ratio sets the height of this row. The file panel must not
+     get a vote: a 450-line composition would otherwise stretch the grid row to its
+     full content height and the "scroll area" would never scroll. Taking the inner
+     column out of flow drops its contribution to the row to zero, and `stretch`
+     then sizes it to whatever the stage decided. */
+  .rb-left {
+    position: relative;
+    align-self: stretch;
+    min-width: 0;
+    min-height: 0;
+    border-right: 1px solid var(--pp-rule);
+  }
+
+  .rb-left-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .rb-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .rb-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--pp-rule);
+    font-size: 0.72rem;
+    color: var(--pp-faint);
+  }
+
+  .rb-panel-title {
+    color: var(--pp-body);
+    font-family: var(--code-font);
+  }
+
+  .rb-panel-meta {
+    margin-left: auto;
+    font-family: var(--code-font);
+  }
+
+  /* ── JSON panel ──────────────────────────────────────────────────────────── */
+
+  .rb-json {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .rb-json-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--pp-rule) transparent;
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: -1px;
+    }
+  }
+
+  .rb-code {
+    margin: 0;
+    padding: 10px 0;
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+    line-height: 1.65;
+    tab-size: 2;
+  }
+
+  /* One element's run of lines. State lives on the block, not on every line, so a
+     frame change repaints one border rather than 450 spans. */
+  .rb-block {
+    border-left: 2px solid transparent;
+    color: var(--pp-muted);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+
+    &.rb-block-el {
+      cursor: pointer;
+    }
+
+    /* On screen at the current frame. */
+    &.is-live {
+      color: var(--pp-ink);
+      background: color-mix(in srgb, var(--line-color) 8%, transparent);
+      border-left-color: color-mix(in srgb, var(--line-color) 55%, transparent);
+    }
+
+    /* Picked on the timeline — same colour as its clip, which is the whole point. */
+    &.is-selected {
+      background: color-mix(in srgb, var(--line-color) 16%, transparent);
+      border-left-color: var(--line-color);
+    }
+
+    &.rb-block-el:hover {
+      background: color-mix(in srgb, var(--line-color) 12%, transparent);
+    }
+  }
+
+  .rb-line {
+    display: flex;
+    padding: 0 14px 0 0;
+    white-space: pre;
+  }
+
+  /* Line numbers. Unselectable so copying the file doesn't take them along. */
+  .rb-ln {
+    flex: 0 0 auto;
+    width: 42px;
+    padding-right: 10px;
+    text-align: right;
+    color: var(--pp-whisper);
+    opacity: 0.55;
+    user-select: none;
+  }
+
+  .rb-line-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ── settings: fps, ratio, size ──────────────────────────────────────────── */
+
+  /* One strip, three groups, on a single line wherever there's room. Stacking these
+     into three full-width rows made the demo's chrome taller than its picture. */
+  .rb-settings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 20px;
+    padding: 7px 14px;
+    border-top: 1px solid var(--pp-rule);
+    background: var(--pp-surface);
+  }
+
+  .rb-settings-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .rb-settings-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--pp-whisper);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+  }
+
+  .rb-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .rb-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border: 1px solid var(--pp-rule);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.66rem;
+    line-height: 1.5;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      border-color 0.16s ease,
+      color 0.16s ease,
+      background-color 0.16s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--rendr-accent);
+      color: var(--pp-ink);
+    }
+
+    &.is-on {
+      border-color: var(--rendr-accent);
+      background: var(--rendr-accent-dim);
+      color: var(--rendr-accent-bright);
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  /* A literal little rectangle of the ratio it names — faster to read than "4:5". */
+  .rb-chip-ratio {
+    display: block;
+    height: 9px;
+    border: 1px solid currentColor;
+    border-radius: 1px;
+    opacity: 0.75;
+  }
+
+  .rb-settings-out {
+    color: var(--pp-whisper);
+    font-family: var(--code-font);
+    font-size: 0.66rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+
+  /* ── the inspector footer ────────────────────────────────────────────────── */
+
+  /* The note and the add button sat side by side and both lost: the text squeezed
+     to a two-word column and the button's label wrapped. Below the breakpoint they
+     stack, button first — it's the control, the note is the caption. */
+  .rb-inspector-foot {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--pp-rule-soft);
+  }
+
+  .rb-inspector-foot .rb-inspector-note {
+    margin: 0;
+    flex: 1;
+    min-width: 22ch;
+  }
+
+  .rb-inspector-foot .rb-add-trigger,
+  .rb-inspector-foot .rb-add-types {
+    flex: 0 0 auto;
+  }
+
+  @media (max-width: 1180px) {
+    .rb-inspector-foot {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .rb-inspector-foot .rb-inspector-note {
+      order: 2;
+      min-width: 0;
+    }
+
+    .rb-inspector-foot .rb-add-trigger {
+      order: 1;
+      justify-content: center;
+    }
+
+    .rb-inspector-foot .rb-add-types {
+      order: 1;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* ── the add bar ─────────────────────────────────────────────────────────── */
+
+  .rb-add-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 8px;
+    border: 1px dashed var(--pp-rule);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--pp-body);
+    font-family: var(--secondary-font);
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      border-color: var(--next-color);
+      color: var(--pp-ink);
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  .rb-add-plus {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    font-size: 0.72rem;
+    border-radius: 50%;
+    background: var(--next-color);
+    color: #000;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+
+  .rb-add-types {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: rb-fan 0.22s var(--easing) both;
+  }
+
+
+  .rb-add-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border: 1px solid var(--next-color);
+    border-radius: 50px;
+    background: color-mix(in srgb, var(--next-color) 16%, transparent);
+    color: var(--next-color);
+    font-family: var(--secondary-font);
+    font-size: 0.74rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--next-color) 30%, transparent);
+      color: var(--pp-ink);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  .rb-t-key {
+    color: var(--rendr-accent-bright);
+  }
+  .rb-t-string {
+    color: var(--pp-body);
+  }
+  .rb-t-ref {
+    color: var(--rendr-accent);
+    font-style: italic;
+  }
+  .rb-t-number {
+    color: var(--pp-strong);
+  }
+  .rb-t-literal {
+    color: var(--rendr-accent);
+  }
+  .rb-t-punct {
+    color: var(--pp-whisper);
+  }
+
+  /* ── inspector ───────────────────────────────────────────────────────────── */
+
+  .rb-inspector {
+    flex: 0 0 auto;
+    max-height: 46%;
+    overflow-y: auto;
+    min-height: 158px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid var(--pp-rule);
+    background: var(--pp-surface-raised);
+    scrollbar-width: thin;
+    scrollbar-color: var(--pp-rule) transparent;
+  }
+
+  /* (the empty state's own rules live with the rest of the inspector, below) */
+
+  .rb-inspector-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+  }
+
+  .rb-icon-danger:hover:not(:disabled) {
+    border-color: var(--rendr-accent-bright);
+    color: var(--rendr-accent-bright);
+  }
+
+  .rb-inspector-foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--pp-rule-soft);
+  }
+
+  .rb-inspector-note {
+    margin: 0;
+    color: var(--pp-whisper);
+    font-size: 0.66rem;
+    line-height: 1.55;
+    max-width: 42ch;
+  }
+
+  /* With nothing selected the inspector holds one sentence and one button, and it
+     was spending 158px of a fixed-height column to do it — stacked, centred, with
+     the hint capped at 34ch so it wrapped to four lines whatever the room. All of
+     that height comes out of the file panel above, which is the thing the reader is
+     actually here to read. Empty, this is now a single row; it claims real height
+     only once there is something to inspect. */
+  .rb-inspector-empty {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* Wraps rather than overflows: on a phone the sentence takes the first line and
+       the add control the second — still far less than the old minimum. */
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    min-height: 0;
+    padding: 9px 14px;
+  }
+
+  /* Gives way first, so the button keeps its size and the sentence reflows. The
+     34ch cap below is for the stacked panel and would force a wrap here. */
+  .rb-inspector-empty .rb-hint {
+    flex: 1 1 16ch;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .rb-inspector-empty .rb-add-trigger,
+  .rb-inspector-empty .rb-add-types {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .rb-inspector-empty .rb-add-types {
+    flex-wrap: wrap;
+  }
+
+  .rb-hint {
+    margin: 0;
+    color: var(--pp-faint);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    max-width: 34ch;
+  }
+
+  .rb-inspector-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .rb-inspector-swatch {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+  }
+
+  .rb-inspector-title {
+    color: var(--pp-ink);
+    font-family: var(--code-font);
+    font-size: 0.78rem;
+  }
+
+  .rb-inspector-type {
+    color: var(--pp-whisper);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+
+  .rb-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+    gap: 8px 10px;
+  }
+
+  .rb-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    min-width: 0;
+
+    > span {
+      color: var(--pp-whisper);
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 5px 7px;
+      border: 1px solid var(--pp-rule);
+      border-radius: 3px;
+      background: var(--pp-surface);
+      color: var(--pp-ink);
+      font-family: var(--code-font);
+      font-size: 0.74rem;
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--rendr-accent);
+        box-shadow: 0 0 0 1px var(--rendr-accent);
+      }
+
+      &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    input[type="color"] {
+      padding: 2px;
+      height: 27px;
+      cursor: pointer;
+    }
+  }
+
+  .rb-field-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* ── the drag-a-number control ───────────────────────────────────────────── */
+
+  /* Numbers are pushed left and right with the mouse rather than typed. The
+     steppers are for precision; the middle is the drag surface. */
+  .rb-num {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--pp-rule);
+    border-radius: 3px;
+    background: var(--pp-surface);
+    overflow: hidden;
+
+    &.is-disabled {
+      opacity: 0.45;
+    }
+  }
+
+  .rb-num-step {
+    flex: 0 0 auto;
+    width: 20px;
+    border: 0;
+    border-right: 1px solid var(--pp-rule);
+    background: transparent;
+    color: var(--pp-faint);
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+
+    &:last-child {
+      border-right: 0;
+      border-left: 1px solid var(--pp-rule);
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--rendr-accent-dim);
+      color: var(--rendr-accent-bright);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  .rb-num-value {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 6px;
+    color: var(--pp-ink);
+    font-family: var(--code-font);
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    cursor: ew-resize;
+    user-select: none;
+    touch-action: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      background: var(--rendr-accent-dim);
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: var(--rendr-accent-dim);
+      box-shadow: inset 0 0 0 1px var(--rendr-accent);
+    }
+  }
+
+  .rb-num-suffix {
+    margin-left: 1px;
+    color: var(--pp-whisper);
+    font-style: normal;
+  }
+
+  .rb-num-typing input {
+    text-align: center;
+  }
+
+  .rb-field-locked {
+    em {
+      color: var(--rendr-accent);
+      font-size: 0.7rem;
+      font-style: italic;
+    }
+  }
+
+  .rb-inspector-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  /* ── stage ───────────────────────────────────────────────────────────────── */
+
+  .rb-stage-panel {
+    background: #000;
+  }
+
+  .rb-stage-viewport {
+    position: relative;
+    width: 100%;
+    /* Capped, so a 9:16 or 4:5 composition can't grow a 700px-wide panel into a
+       1200px-tall one. `useStageFit` fits the stage inside this box on whichever
+       axis runs out first; the remainder reads as letterboxing. */
+    max-height: 450px;
+    overflow: hidden;
+    background: #000;
+    cursor: pointer;
+    /* The chrome around the picture — the gate, the status line, the letterboxed
+       margins — is a play/pause target, so dragging across it shouldn't select
+       anything. The picture itself opts back in; see `.rw-stage` below. */
+    user-select: none;
+    -webkit-user-select: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--rendr-accent);
+      outline-offset: -2px;
+    }
+  }
+
+  /**
+   * The rendered frame is selectable text.
+   *
+   * `.rw-stage` is the runtime's own node, and everything in it that is text
+   * really is text — a `Text` element's content, a caption's words. Being able to
+   * select it is the cheapest possible proof that the picture is a live DOM
+   * composition and not a `<video>` or a canvas blit, which is the single claim
+   * this whole demo exists to make. It costs nothing to allow.
+   *
+   * The play/pause click is guarded against drags in `RendrBench`, so selecting a
+   * line doesn't also toggle playback.
+   */
+  .rw-stage {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: auto;
+  }
+
+  .rb-stage-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.76rem;
+  }
+
+  /* The engine reports what it is waiting on; this says it is still waiting.
+     Together they're the difference between "loading" and a frozen panel. */
+  .rb-stage-spinner {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    border: 1.5px solid var(--pp-rule);
+    border-top-color: var(--rendr-accent);
+    border-radius: 50%;
+    animation: rb-spin 0.7s linear infinite;
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .rb-stage-spinner {
+      animation-duration: 2.4s;
+    }
+  }
+
+  .rb-stage-error {
+    color: var(--rendr-accent-bright);
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  /* ── the start gate ──────────────────────────────────────────────────────── */
+
+  /* Nothing behind it yet, so it owns the whole picture area. */
+  .rb-stage-gate {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 24px;
+    text-align: center;
+    background:
+      radial-gradient(
+        120% 90% at 50% 40%,
+        var(--rendr-accent-dim) 0%,
+        #000 70%
+      );
+  }
+
+  .rb-gate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 20px;
+    border: 1px solid var(--rendr-accent);
+    border-radius: 50px;
+    background: var(--rendr-accent);
+    color: #0a0614;
+    font-family: var(--secondary-font, inherit);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.18s ease;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    &:hover {
+      background: var(--rendr-accent-bright);
+      border-color: var(--rendr-accent-bright);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--rendr-accent-bright);
+      outline-offset: 3px;
+    }
+  }
+
+  .rb-gate-note {
+    margin: 0;
+    max-width: 44ch;
+    color: var(--pp-faint);
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  /* A 16:9 stage is only ~200px tall on a phone; the note is the part that gives. */
+  @media (max-width: 560px) {
+    .rb-gate-note {
+      display: none;
+    }
+  }
+
+  /* ── transport ───────────────────────────────────────────────────────────── */
+
+
+
+
+
+
+
+  .rb-readout-fps select {
+    padding: 2px 4px;
+    border: 1px solid var(--pp-rule);
+    border-radius: 3px;
+    background: var(--pp-surface);
+    color: var(--pp-ink);
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--rendr-accent);
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 1px;
+    }
+  }
+
+
+  .rb-mono {
+    font-family: var(--code-font);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── buttons ─────────────────────────────────────────────────────────────── */
+
+  .rb-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--pp-rule);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--pp-body);
+    font-family: var(--secondary-font);
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease,
+      background-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--rendr-accent);
+      color: var(--pp-ink);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  .rb-btn-primary {
+    background: var(--rendr-accent);
+    border-color: var(--rendr-accent);
+    color: var(--pp-on-accent);
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      background: var(--rendr-accent-bright);
+      border-color: var(--rendr-accent-bright);
+      color: var(--pp-on-accent);
+    }
+  }
+
+  .rb-btn-ghost {
+    margin-left: 4px;
+    color: var(--pp-faint);
+  }
+
+  /* Icon plus a one-word label. "Reset composition" was the widest thing in a bar
+     that also has to carry the resolution, the frame rate and the frame count —
+     and on a phone it was pushing the spec line onto its own row. */
+  .rb-btn-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+      flex: 0 0 auto;
+    }
+  }
+
+  /**
+   * The live clock beside the picture — phones only.
+   *
+   * The panel head already carries a static timecode for the current frame; this
+   * is the one that ticks. It exists because the bench stacks into two screens on
+   * a phone and the transport's readout ends up below the fold while you are
+   * watching the stage. Above the stacking breakpoint the transport is visible
+   * anyway and a second clock is just noise.
+   */
+  .rb-panel-clock {
+    display: none;
+    margin-left: auto;
+    color: var(--rendr-accent);
+  }
+
+  @media (max-width: 900px) {
+    .rb-panel-clock {
+      display: inline;
+    }
+
+    /* The static one becomes the redundant half once the live one is there. */
+    .rb-panel-head .rb-panel-meta:not(.rb-panel-clock) {
+      display: none;
+    }
+  }
+
+  .rb-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border: 1px solid var(--pp-rule);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--pp-body);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: var(--rendr-accent);
+      color: var(--pp-ink);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  /* ── timeline ────────────────────────────────────────────────────────────── */
+
+
+  .rb-timeline {
+    border-top: 1px solid var(--pp-rule);
+    background: var(--pp-surface);
+    padding-bottom: 8px;
+
+    /* The track scrolls rather than compressing.
+       Every position on the timeline is a percentage of the track's width, so a
+       narrow panel used to squash sixteen seconds into whatever space was left —
+       at which point a 40-frame clip is three pixels wide, the ruler's second
+       marks overprint each other, and nothing can be aimed at. It now keeps a
+       legible minimum width and overflows sideways instead. */
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--pp-rule) transparent;
+  }
+
+  /* Fifteen lanes at 22px is 330px of timeline, which squeezes everything above it.
+     Past eight lanes the list scrolls instead of shrinking. */
+  .rb-tl-lanes {
+    max-height: 190px;
+    overflow-y: auto;
+    /* `clip`, not the default. `overflow-y: auto` alone computes the other axis to
+       `auto` too, which would make this a second horizontal scroller nested inside
+       the timeline's — the lanes would slide out from under the ruler and the
+       playhead, which are its siblings. `clip` leaves the one scroller in charge. */
+    overflow-x: clip;
+    scrollbar-width: thin;
+    scrollbar-color: var(--pp-rule) transparent;
+  }
+
+
+  .rb-tl-grid {
+    position: relative;
+    --rb-gutter: 132px;
+    /* Below this the track stops being readable — 16s across less than ~640px puts
+       the second marks under 40px apart. Everything inside is still a percentage,
+       so this is the only number that decides how tight the timeline may get. */
+    --rb-track-min: 640px;
+    min-width: calc(var(--rb-gutter) + var(--rb-track-min));
+  }
+
+  /**
+   * The whole grid scrolls as one — nothing is pinned.
+   *
+   * This was `position: sticky; left: 0` on `.rb-tl-gutter`, intending to hold the
+   * lane names in place while the track scrolled under them. It only ever half
+   * worked, and the half that worked was the wrong half:
+   *
+   * `.rb-tl-lanes` is `overflow-y: auto` for the lane list, and a box that scrolls
+   * on *either* axis is a scroll container on both. So a sticky lane name resolved
+   * against `.rb-tl-lanes` — which never scrolls horizontally — and did nothing.
+   * The "N lanes" header, meanwhile, is a direct child of `.rb-tl-grid`, outside
+   * that container, so it resolved against the timeline's own scrollport and
+   * really did pin. The result was one label frozen while the ruler, the clips and
+   * every lane name slid past it.
+   *
+   * Pinning the names properly would mean lifting the vertical scroll off
+   * `.rb-tl-lanes`, which is a bigger change than the problem deserves. Everything
+   * moving together is coherent, and it is what the timeline looked like before
+   * the track became scrollable at all.
+   */
+  .rb-tl-label {
+    background: var(--pp-surface);
+  }
+
+  .rb-tl-row {
+    display: grid;
+    grid-template-columns: var(--rb-gutter) minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .rb-tl-gutter {
+    padding: 0 10px;
+    border-right: 1px solid var(--pp-rule);
+    min-width: 0;
+  }
+
+  .rb-tl-gutter-head {
+    display: flex;
+    align-items: center;
+    height: 26px;
+    border-bottom: 1px solid var(--pp-rule);
+  }
+
+  .rb-tl-head-label {
+    color: var(--pp-whisper);
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* The ruler is the scrub surface. Clips select; the ruler moves the playhead —
+     one surface doing both means every selection also jumps the frame. */
+  .rb-tl-ruler {
+    position: absolute;
+    top: 0;
+    left: var(--rb-gutter);
+    right: 0;
+    height: 26px;
+    border-bottom: 1px solid var(--pp-rule);
+    cursor: ew-resize;
+    touch-action: none;
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: -1px;
+    }
+  }
+
+  .rb-tl-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--pp-rule);
+  }
+
+  .rb-tl-tick-label {
+    position: absolute;
+    left: 4px;
+    top: 5px;
+    color: var(--pp-whisper);
+    font-family: var(--code-font);
+    font-size: 0.6rem;
+  }
+
+  /* The first row sits under the absolutely-positioned ruler. */
+  .rb-tl-grid > .rb-tl-gutter-head {
+    width: var(--rb-gutter);
+  }
+
+  .rb-tl-label {
+    height: 22px;
+    display: flex;
+    align-items: center;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--pp-muted);
+      font-family: var(--code-font);
+      font-size: 0.66rem;
+      text-align: left;
+      cursor: pointer;
+      min-width: 0;
+
+      &:focus-visible {
+        outline: 1px solid var(--rendr-accent);
+        outline-offset: 1px;
+      }
+    }
+
+    &.is-on button {
+      color: var(--pp-ink);
+    }
+
+    &.is-selected button {
+      color: var(--clip-color);
+    }
+  }
+
+  .rb-tl-swatch {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--clip-color);
+    opacity: 0.55;
+
+    .rb-tl-label.is-on &,
+    .rb-tl-label.is-selected & {
+      opacity: 1;
+    }
+  }
+
+  .rb-tl-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rb-tl-lane {
+    position: relative;
+    height: 22px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      border-bottom: 1px solid var(--pp-rule-soft);
+    }
+  }
+
+  .rb-tl-clip {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--clip-color) 45%, transparent);
+    border-left: 2px solid var(--clip-color);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--clip-color) 14%, transparent);
+    color: color-mix(in srgb, var(--clip-color) 80%, #fff);
+    font-family: var(--code-font);
+    font-size: 0.62rem;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease;
+
+    &.is-on {
+      background: color-mix(in srgb, var(--clip-color) 28%, transparent);
+      border-color: var(--clip-color);
+    }
+
+    &.is-selected {
+      background: color-mix(in srgb, var(--clip-color) 38%, transparent);
+      box-shadow: 0 0 0 1px var(--clip-color);
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 1px;
+    }
+  }
+
+  .rb-tl-clip-name {
+    opacity: 0.9;
+  }
+
+  .rb-tl-overlay {
+    position: absolute;
+    top: 0;
+    left: var(--rb-gutter);
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+
+  .rb-tl-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--rendr-accent);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -4px;
+      width: 9px;
+      height: 9px;
+      background: var(--rendr-accent);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+  }
+
+  /* ── caption ─────────────────────────────────────────────────────────────── */
+
+  .rb-caption {
+    max-width: var(--pp-max);
+    margin: 14px auto 0;
+    color: var(--pp-faint);
+    font-family: var(--article-font);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* ── narrow ──────────────────────────────────────────────────────────────── */
+
+  /* ── phones ──────────────────────────────────────────────────────────────── *
+   *
+   * The desktop layout stacked into four full-width bands that added up to more
+   * than a phone screen, so nothing was ever whole: you saw a picture, scrolled
+   * past a wall of JSON, found the controls, and met the timeline last.
+   *
+   * This reorders it into two deliberate screens instead.
+   *
+   *   Screen one — the picture, its transport, a compact lane strip, and the
+   *   output settings. Everything needed to watch the thing and change what it
+   *   is, sized to sit inside one viewport.
+   *
+   *   Screen two — the file, the inspector, and the labelled timeline, which is
+   *   where the reading happens and where scrolling is expected.
+   *
+   * `order` does the reordering; the DOM stays in its desktop sequence so the tab
+   * order and the screen-reader narrative still read top to bottom.
+   */
+  @media (max-width: 900px) {
+    .rb-main {
+      display: contents;
+    }
+
+    .rb-shell {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .rb-bar {
+      order: 1;
+    }
+    .rb-stage-panel {
+      order: 2;
+    }
+    .rt-transport {
+      order: 3;
+    }
+    .rb-settings {
+      order: 4;
+    }
+    .rb-left {
+      order: 5;
+    }
+    .rb-tl-slot {
+      order: 6;
+    }
+
+    .rb-bar-spec {
+      display: none;
+    }
+
+    /* Screen one has to fit. The stage is the only thing allowed to be large. */
+    .rb-transport {
+      gap: 10px;
+      padding: 8px 12px;
+    }
+
+    .rb-settings {
+      gap: 4px 14px;
+      padding: 6px 12px;
+      border-top: 0;
+    }
+
+    .rb-settings-row {
+      width: 100%;
+    }
+
+    .rb-settings-label {
+      flex: 0 0 34px;
+    }
+
+    .rb-settings-out {
+      display: none;
+    }
+
+    .rb-bar {
+      padding: 7px 12px;
+    }
+
+    .rb-chips {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .rb-chip {
+      padding: 5px 11px;
+      font-size: 0.7rem;
+    }
+
+    /* The compact ruler is the scrub surface on a phone, so it needs the thumb
+       room the labelled one gets on desktop. */
+    .rb-timeline.is-compact .rb-tl-ruler {
+      height: 30px;
+    }
+
+    .rb-readout {
+      gap: 14px;
+      font-size: 0.7rem;
+    }
+
+    .rb-readout-meter {
+      display: none;
+    }
+
+    /* Single column: nothing to match heights with, so the panel goes back into
+       normal flow and the scroll area is capped explicitly instead. */
+    .rb-left {
+      position: static;
+      border-right: 0;
+      border-top: 1px solid var(--pp-rule);
+    }
+
+    .rb-left-inner {
+      position: static;
+    }
+
+    /* Screen two. Tall enough to read, capped so it can't swallow the page. */
+    .rb-json-scroll {
+      max-height: 46vh;
+    }
+
+    .rb-inspector {
+      max-height: none;
+    }
+
+    .rb-code {
+      font-size: 0.68rem;
+    }
+
+    .rb-ln {
+      width: 32px;
+      padding-right: 8px;
+    }
+
+    .rb-tl-lanes {
+      max-height: 240px;
+    }
+
+    .rb-stage-panel {
+      order: 1;
+    }
+
+    .rb-json-scroll {
+      max-height: 260px;
+    }
+
+    .rb-tl-grid {
+      --rb-gutter: 96px;
+    }
+
+    .rb-readout {
+      margin-left: 0;
+      gap: 12px;
+    }
+
+    /* Touch targets. A 26px ruler and a 20px stepper are fine for a cursor and
+       hostile to a thumb. */
+    .rb-tl-ruler {
+      height: 34px;
+    }
+
+    .rb-tl-gutter-head {
+      height: 34px;
+    }
+
+    .rb-num-step {
+      width: 30px;
+    }
+
+    .rb-num-value {
+      padding: 8px 6px;
+    }
+
+    .rb-icon-btn {
+      width: 34px;
+      height: 34px;
+    }
+
+    .rb-btn {
+      padding: 8px 14px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rb-bar-dot {
+      animation: none;
+    }
+
+    .rb-line,
+    .rb-tl-clip,
+    .rb-btn {
+      transition: none;
+    }
+  }
+
+}
+
+@keyframes rb-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--rendr-accent) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes rb-fan {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

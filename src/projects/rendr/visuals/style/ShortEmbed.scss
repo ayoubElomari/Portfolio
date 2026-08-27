@@ -1,0 +1,135 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   The Shorts Engine video, section 3. Real output rather than a figure, so
+   it keeps the bordered plate its `Frame` gives it instead of the flat
+   hairline treatment the diagrams in this folder use.
+
+   A 9:16 video in a 656px reading column would be over 1100px tall, so the
+   screen is capped at a phone-ish width and centred. The plate around it is
+   what stops that reading as a stray floating rectangle.
+
+   One trap worth knowing before adding any other image to this folder: the
+   shared article stylesheet sets `article.project-article img { height: auto }`,
+   which is specificity (0,1,2). A single-class rule like `.foo > img` is
+   (0,1,1) and loses to it silently, leaving the image at its intrinsic
+   ratio instead of filling its box. The poster rule below therefore leads
+   with two classes so it wins outright rather than relying on source order.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.rendr-short {
+  display: flex;
+  justify-content: center;
+}
+
+.rendr-short-screen {
+  position: relative;
+  width: min(264px, 100%);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: var(--pp-radius-sm);
+  background-color: #000;
+
+  > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+.rendr-short-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--pp-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Two classes deep on purpose: see the note at the top of this file about
+   `article.project-article img`.
+
+   YouTube renders a vertical short into a 4:3 poster by padding the sides.
+   Cropping that image to 9:16 with `cover` removes exactly the padding: the
+   content column of a 480x360 poster is 360 * 9/16 = 202.5px wide and
+   centred, which is precisely the region a 9:16 cover fit keeps. */
+.rendr-short-screen > .rendr-short-play > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The poster is a low resolution thumbnail filling a taller box, so it is
+     held slightly back until it is the thing being looked at. */
+  opacity: 0.82;
+  transition: opacity 240ms ease, transform 320ms ease;
+}
+
+.rendr-short-screen > .rendr-short-play:hover > img,
+.rendr-short-screen > .rendr-short-play:focus-visible > img {
+  opacity: 1;
+  transform: scale(1.02);
+}
+
+.rendr-short-glyph {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--pp-accent);
+  color: var(--pp-on-accent);
+  transition: transform 240ms ease;
+
+  > svg {
+    width: 24px;
+    height: 24px;
+    /* Optical centring: a triangle's visual centre sits left of its box. */
+    margin-left: 2px;
+  }
+
+  .rendr-short-play:hover &,
+  .rendr-short-play:focus-visible & {
+    transform: scale(1.08);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    .rendr-short-play:hover &,
+    .rendr-short-play:focus-visible & {
+      transform: none;
+    }
+  }
+}
+
+.rendr-short-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rendr-short-screen > .rendr-short-play > img {
+    transition: none;
+  }
+
+  .rendr-short-screen > .rendr-short-play:hover > img,
+  .rendr-short-screen > .rendr-short-play:focus-visible > img {
+    transform: none;
+  }
+}

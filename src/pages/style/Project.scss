@@ -1,0 +1,136 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Project page root.
+
+   This is the single token layer for the whole case-study template. Every
+   piece of the page (hero, article, contents rail, code blocks, footer) reads
+   from `--pp-*` and nothing else, so a project can retint the entire page by
+   setting three variables in its `meta.style`:
+
+     style: {
+       "--project-accent-color":  "#4ad2ff",   // signal colour
+       "--project-primary-color": "#eef4f8",   // headline / ink colour
+       "--project-font-family":   "'Space Mono', monospace",
+     }
+
+   Everything falls back to the site-wide brand tokens, so a project that
+   sets nothing still looks like it belongs here.
+
+   ── The page canvas ─────────────────────────────────────────────────────
+   The template is built on one measurement chain, declared here and used
+   verbatim by the hero, the article and the footer:
+
+     --pp-max        the canvas width; nothing bleeds past it
+     --pp-gutter     canvas → content inset
+     --pp-rail       contents rail width (desktop only)
+     --pp-col-gap    rail → article gap
+     --pp-measure    the reading column
+     --pp-aside-gap  reading column → margin channel gap
+
+   The margin channel is whatever is left over, which at `--pp-max` resolves
+   to ~240px. `.pp-wide` spans column + channel; `.pp-full` escapes the rail
+   and both gutters to reach the canvas edges. Those two classes are the only
+   escape hatches, and they are derived entirely from the chain above — so
+   changing one number here re-composes the whole page coherently.
+   ───────────────────────────────────────────────────────────────────────── */
+.project-page {
+  /* ── Identity — overridable per project ─────────────────────────────── */
+  --pp-accent: var(--project-accent-color, var(--accent-color));
+  --pp-ink: var(--project-primary-color, var(--primary-color));
+  --pp-display-font: var(--project-font-family, var(--primary-font));
+
+  /* Derived accent tints (one source of truth, so the whole page retints) */
+  --pp-accent-soft: color-mix(in srgb, var(--pp-accent) 22%, transparent);
+  --pp-accent-faint: color-mix(in srgb, var(--pp-accent) 10%, transparent);
+  --pp-accent-hair: color-mix(in srgb, var(--pp-accent) 40%, transparent);
+  /* Ink used *on top of* a solid accent fill (the hero's primary action).
+     Accents are expected to be bright enough for black ink — a project that
+     picks a dark accent must override this, e.g.
+     `"--project-on-accent-color": "#fff"`. */
+  --pp-on-accent: var(--project-on-accent-color, var(--bg-color));
+
+  /* Ink scale. `--pp-ink` (`#faeada` by default) is a warm cream, not a
+     neutral white — fine for a headline at display size, but read at body
+     size and in bulk it shows its hue and skews visibly orange, especially
+     beside `--pp-strong` (pure white). So body blends *toward white*, not
+     toward black: brighter and less warm than raw `--pp-ink`, while `muted`/
+     `faint` still step down toward black for genuine de-emphasis. Every step
+     clears WCAG AA (4.5:1) on the black ground. */
+  --pp-strong: var(--secondary-color);
+  --pp-body: color-mix(in srgb, var(--pp-strong) 55%, var(--pp-ink) 45%);
+  --pp-muted: color-mix(in srgb, var(--pp-ink) 62%, #000);
+  --pp-faint: color-mix(in srgb, var(--pp-ink) 52%, #000);
+  /* Non-text decoration only (rules, dots) — not held to text contrast */
+  --pp-whisper: color-mix(in srgb, var(--pp-ink) 30%, #000);
+
+  /* ── Surfaces & rules ───────────────────────────────────────────────── */
+  --pp-rule: var(--border-color);
+  --pp-rule-soft: color-mix(in srgb, var(--border-color) 55%, transparent);
+  --pp-surface: #0a0908;
+  --pp-surface-raised: #121010;
+  --pp-radius: 12px;
+  --pp-radius-sm: 8px;
+
+  /* ── The measurement chain ──────────────────────────────────────────── */
+  --pp-max: 1360px;
+  --pp-gutter: clamp(20px, 5vw, 72px);
+  --pp-rail: 208px;
+  --pp-col-gap: 72px;
+  /* Reading measure. NOT expressed in `ch`: `ch` is the width of the glyph
+     "0", and Raleway's zero is much wider than its average lowercase letter,
+     so 72ch actually renders ~96 characters per line. 41rem measures out at
+     ~74 real characters at the 19px body size. */
+  --pp-measure: 41rem;
+  --pp-aside-gap: 40px;
+
+  /* Bleed offsets — how far `.pp-full` reaches past the article's own box.
+     Right: the canvas gutter, so a full beat reaches the true page edge (the
+     margin channel already carries the article's box that far).
+     Left: only half the rail's gap, so the beat stops short of the contents
+     rail with breathing room instead of running underneath it (the rail is
+     sticky with no background of its own on desktop, so anything reaching
+     its column — even flush, with no gap — would paint straight over the
+     nav) or looking jammed flush against it. Below the rail breakpoint
+     there is no rail to clear, so the left side reaches the edge like the
+     right (see the override further down). */
+  --pp-bleed-left: calc(var(--pp-col-gap) / 2);
+  --pp-bleed-right: var(--pp-gutter);
+
+  --pp-header-offset: 128px;
+
+  /* ── Mobile contents-bar docking ────────────────────────────────────────
+     Below the rail breakpoint the contents rail becomes a sticky bar pinned
+     under the site header. The header is 82px tall on mobile, so the bar
+     docks at 94px — an even 12px gap beneath it. When the header retracts on
+     scroll the bar rises into the space it left, keeping that same 12px gap
+     from the viewport edge. Both values live here so the pair stays in step:
+     `dock - dock-raised` must equal the mobile header's height, or the bar
+     will sit at a different distance from the edge in each state. */
+  --pp-toc-dock: 94px;
+  --pp-toc-dock-raised: 12px;
+
+  display: flex;
+  flex-direction: column;
+  overflow-x: clip;
+
+  /* ── Optional full-width demo slot (see `HeroDemo` in lib/projects.js) ──
+     Deliberately almost empty: it owns the vertical rhythm between the hero
+     and the article and nothing else. No padding, no max-width, no surface —
+     a project's own demo component decides whether it runs edge to edge,
+     caps itself at `--pp-max`, or anything in between. */
+  .project-hero-demo {
+    margin-top: clamp(48px, 7vh, 96px);
+    scroll-margin-top: var(--pp-header-offset);
+  }
+
+  /* ── Rail collapses: the contents bar becomes sticky top chrome ─────── */
+  @media screen and (max-width: 1199px) {
+    --pp-header-offset: 156px;
+    --pp-bleed-left: var(--pp-gutter);
+  }
+
+  /* ── Margin channel collapses: single-column reading ────────────────── */
+  @media screen and (max-width: 899px) {
+    --pp-aside-gap: 0px;
+    --pp-header-offset: 148px;
+  }
+}

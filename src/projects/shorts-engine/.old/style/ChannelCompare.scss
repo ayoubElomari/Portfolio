@@ -1,0 +1,190 @@
+/* Two channel identities side by side.
+ *
+ * Everything inside a frame is sized off `--se-cc-h`, the one length that
+ * decides how big a mockup is, so the caption keeps its real proportion to the
+ * video frame at every viewport instead of drifting. A 9:16 frame driven by
+ * its width would be ~800px tall in this column — driving it by height and
+ * deriving the width is what keeps it a phone-shaped thing on a page.
+ *
+ * The captions use the site's condensed display face; the real channels used
+ * Oswald, which this site doesn't load. */
+
+.se-cc {
+  --se-cc-h: clamp(300px, 40vw, 440px);
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 3vw, 40px);
+  font-family: var(--secondary-font);
+}
+
+@media screen and (max-width: 699px) {
+  .se-cc {
+    grid-template-columns: minmax(0, 1fr);
+    --se-cc-h: clamp(300px, 78vw, 400px);
+  }
+}
+
+.se-cc-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  min-width: 0;
+}
+
+/* ── Label ───────────────────────────────────────────────────────────────── */
+
+.se-cc-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--pp-ink);
+}
+
+.se-cc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background-color: var(--se-ch);
+  box-shadow: 0 0 10px -1px var(--se-ch);
+}
+
+.se-cc-tag {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pp-faint);
+
+  &::before {
+    content: "· ";
+  }
+}
+
+/* ── The frame ───────────────────────────────────────────────────────────── */
+
+.se-cc-frame {
+  position: relative;
+  overflow: hidden;
+  width: calc(var(--se-cc-h) * 9 / 16);
+  max-width: 100%;
+  height: var(--se-cc-h);
+  border: 1px solid var(--pp-rule);
+  border-radius: 10px;
+  background-color: #080707;
+}
+
+.se-cc-wash {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      70% 40% at 30% 18%,
+      color-mix(in srgb, var(--se-ch) 26%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      90% 45% at 72% 88%,
+      color-mix(in srgb, var(--se-ch) 18%, transparent) 0%,
+      transparent 72%
+    ),
+    linear-gradient(180deg, #131010 0%, #070606 100%);
+}
+
+/* ── The post card overlay ───────────────────────────────────────────────── */
+
+.se-cc-post {
+  position: absolute;
+  top: 7%;
+  left: 50%;
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 8px;
+  width: 82%;
+  padding: 9px 10px 11px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background-color: rgb(12 10 10 / 82%);
+  backdrop-filter: blur(2px);
+}
+
+.se-cc-avatar {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background-color: var(--se-ch);
+}
+
+.se-cc-sub {
+  align-self: center;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--pp-faint);
+}
+
+.se-cc-bars {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.se-cc-bar {
+  height: 4px;
+  border-radius: 999px;
+  background-color: rgb(250 234 218 / 22%);
+
+  &.is-short {
+    width: 62%;
+  }
+}
+
+/* ── The caption — the whole point ───────────────────────────────────────── */
+
+.se-cc-caption {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.1em 0.26em;
+  width: var(--se-cap-width);
+  margin: 0;
+  font-family: var(--primary-font);
+  font-size: calc(var(--se-cc-h) * var(--se-cap-size));
+  font-weight: var(--se-cap-weight);
+  line-height: 1.06;
+  letter-spacing: var(--se-cap-track);
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  text-shadow: 0 2px 10px rgb(0 0 0 / 75%);
+}
+
+.se-cc-word.is-hot {
+  padding-inline: 0.16em;
+  border-radius: 0.1em;
+  background-color: var(--se-ch);
+  color: #fff;
+  text-shadow: none;
+}
+
+/* ── The facts under the frame ───────────────────────────────────────────── */
+
+.se-cc-spec {
+  margin: 0;
+  font-family: var(--code-font);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--pp-faint);
+}

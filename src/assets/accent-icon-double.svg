@@ -1,0 +1,18 @@
+<svg width="111" height="80" viewBox="0 0 111 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_4_766)">
+<g clip-path="url(#clip1_4_766)">
+<path d="M65.1621 80V12.2034C67.3192 57.0395 96.6946 76.0827 111 80H65.1621Z" fill="#FAEADA"/>
+<path d="M111 0H65.1621V46.1017H111V0Z" fill="#FAEADA"/>
+<path d="M0 80V12.2034C2.15709 57.0395 31.5324 76.0827 45.8381 80H0Z" fill="#FAEADA"/>
+<path d="M45.8381 0H0V46.1017H45.8381V0Z" fill="#FAEADA"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_4_766">
+<rect width="111" height="80" fill="white"/>
+</clipPath>
+<clipPath id="clip1_4_766">
+<rect width="111" height="80" fill="white"/>
+</clipPath>
+</defs>
+</svg>

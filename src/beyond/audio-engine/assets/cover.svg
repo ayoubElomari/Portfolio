@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-label="A waveform forking into a browser path and a separate process path, joined by a dashed stream">
+  <rect width="1200" height="800" fill="#0a0908"/>
+  <g stroke="#211d1b" stroke-width="1">
+    <path d="M0 200h1200M0 400h1200M0 600h1200M400 0v800M800 0v800"/>
+  </g>
+
+  <!-- incoming signal -->
+  <g stroke="#ffb454" stroke-width="2" fill="none" opacity="0.9">
+    <path d="M90 400 L130 350 L170 440 L210 320 L250 460 L290 380 L330 400" />
+  </g>
+
+  <!-- fork -->
+  <circle cx="380" cy="400" r="7" fill="#ffb454"/>
+  <g stroke="#ffb454" stroke-width="2" fill="none" opacity="0.7">
+    <path d="M380 400 C 520 400, 560 260, 700 220" />
+    <path d="M380 400 C 520 400, 560 540, 700 580" />
+  </g>
+
+  <!-- browser plate -->
+  <rect x="700" y="150" width="380" height="140" fill="#121010" stroke="#2b2624"/>
+  <rect x="700" y="150" width="380" height="34" fill="#191615" stroke="#2b2624"/>
+  <circle cx="722" cy="167" r="5" fill="#3a3330"/>
+  <circle cx="740" cy="167" r="5" fill="#3a3330"/>
+  <circle cx="758" cy="167" r="5" fill="#3a3330"/>
+  <text x="722" y="230" font-family="monospace" font-size="18" fill="#faeada" letter-spacing="2">BROWSER</text>
+  <text x="722" y="258" font-family="monospace" font-size="13" fill="#6d635e">one runtime, Web Audio</text>
+
+  <!-- process plate -->
+  <rect x="700" y="510" width="380" height="140" fill="#121010" stroke="#2b2624"/>
+  <text x="722" y="558" font-family="monospace" font-size="18" fill="#ffb454">&gt;_</text>
+  <text x="760" y="558" font-family="monospace" font-size="18" fill="#faeada" letter-spacing="2">PROCESS</text>
+  <text x="722" y="586" font-family="monospace" font-size="13" fill="#6d635e">dedicated subprocess</text>
+
+  <!-- stream link between the two, dashed: the undecided connection -->
+  <g stroke="#ffb454" stroke-width="2" stroke-dasharray="6 8" opacity="0.6">
+    <path d="M1080 290 L1080 510" fill="none"/>
+  </g>
+  <text x="1096" y="410" font-family="monospace" font-size="14" fill="#ffb454" letter-spacing="2" transform="rotate(90 1096 410)">STREAM?</text>
+
+  <g font-family="monospace" font-size="15" fill="#6d635e" letter-spacing="3">
+    <text x="90" y="740">SIGNAL IN</text>
+    <text x="700" y="740">ARCHITECTURE UNDECIDED</text>
+  </g>
+</svg>

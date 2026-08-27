@@ -1,0 +1,130 @@
+@use "./kit" as kit;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   The capture path, section 4. Fourth hand-authored figure on this page, and
+   the first to share its chip and arrow with another one rather than
+   restating them (see style/_kit.scss for why the seam is where it is).
+
+   Every rule leads with the root class. That is load bearing, not tidiness:
+   the shared article stylesheet styles `ol` and `ol li` at (0,1,2) and
+   (0,1,3), which a single-class rule loses to silently. The v1 round trip
+   shipped that bug and rendered as a column at every width with lopsided
+   padding before it was caught.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.rendr-cp {
+  display: flex;
+  flex-direction: column;
+  /* Group spacing, per the kit's 8px rhythm. The two rows are one comparison,
+     so they sit closer than the figure sits to the prose around it. */
+  gap: 20px;
+  margin: 6px 0 2px;
+
+  @include kit.reveal;
+
+  .rendr-cp-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Which version this row is. The only label on the figure: the chips carry
+     everything else, and the caption names what changed. */
+  .rendr-cp-version {
+    margin: 0;
+    font-family: var(--code-font);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--pp-faint);
+  }
+
+  .rendr-cp-flow {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    /* 8px here plus 8px of the link's own width either side puts 24px between
+       two chips, which is the kit's sibling rhythm. */
+    gap: 8px;
+    margin: 0;
+    /* Overrides the article's own list indent. */
+    padding: 0;
+    list-style: none;
+  }
+
+  .rendr-cp-stage {
+    @include kit.chip;
+
+    &.is-accent {
+      @include kit.chip-accent;
+    }
+  }
+
+  .rendr-cp-link {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    color: var(--pp-whisper);
+  }
+
+  .rendr-cp-chevron {
+    @include kit.chevron;
+  }
+
+  /* The superseded row, stepped down the ink scale rather than faded. */
+  .rendr-cp-row.is-past {
+    .rendr-cp-stage {
+      @include kit.chip-past;
+    }
+
+    .rendr-cp-version,
+    .rendr-cp-link {
+      color: var(--pp-whisper);
+    }
+  }
+
+  /* ── Standing the rows up on narrow screens ────────────────────────────
+     Measured, not guessed. The wider of the two rows is v1, at 424px. The
+     reading column is `viewport - 2 * clamp(20px, 5vw, 72px)`, so it falls
+     under 424 at roughly a 471px viewport, and 480 sits just the safe side
+     of that.
+
+     Getting this from a round number rather than from the row is how the v1
+     round trip figure ended up standing itself up on screens where its row
+     fitted perfectly well. Re-measure before changing it. */
+  @media (max-width: 480px) {
+    .rendr-cp-flow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .rendr-cp-stage {
+      text-align: center;
+    }
+
+    .rendr-cp-link {
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+
+      &::before {
+        content: "";
+        width: 1px;
+        height: 12px;
+        background-color: currentColor;
+      }
+    }
+
+    .rendr-cp-chevron {
+      /* Rotating the box leaves a 12px footprint for an 8px mark, so the
+         negative margin takes the difference back. */
+      transform: rotate(90deg);
+      margin: -2px 0;
+    }
+  }
+}
+
+.rendr-cp-sr {
+  @include kit.sr-only;
+}

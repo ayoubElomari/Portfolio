@@ -1,0 +1,49 @@
+import { Link } from "react-router-dom";
+
+import cover from "./assets/cover.svg";
+
+export const meta = {
+  slug: "ai-compositor",
+  title: "AI Compositor",
+  titlePrefix: "IA ; Automatisation",
+  tag: "automation",
+  subtitle:
+    "Rendr peut générer un aperçu instantanément, ce qui veut dire qu'une IA qui écrit une composition pourrait vérifier son propre travail avant que quelqu'un ne le voie.",
+  description:
+    "Une composition Rendr n'est qu'un fichier JSON, donc en principe une IA pourrait en écrire une directement au lieu qu'une personne la construise à la main. La vraie difficulté n'est pas le format, c'est d'apprendre à quelque chose à juger si le résultat est vraiment réussi.",
+  duration: "Non construit",
+  date: "2026-08-27",
+  stats: [
+    { label: "Statut", value: "Idée, aucune méthode d'évaluation pour l'instant" },
+    { label: "Question ouverte", value: "Ce qu'un contrôle automatique devrait vérifier" },
+    { label: "Dépend de", value: "L'indépendance des images de Rendr, pour des aperçus peu coûteux" },
+  ],
+  style: {
+    "--project-accent-color": "#f472b6",
+  },
+  cover,
+};
+
+# L'idée
+
+<Lede>
+  Une composition <Link to="/project/rendr">Rendr</Link> est un fichier JSON,
+  pas une vidéo montée à la main. Ça veut dire qu'en théorie, autre chose
+  qu'une personne pourrait l'écrire. AI Compositor part de cette idée : une
+  IA génère une composition complète directement, on choisit un sujet, on
+  récupère une vidéo terminée, sans timeline entre les deux.
+</Lede>
+
+Faire produire à une IA quelque chose dans le bon format n'est plus la partie difficile. Les modèles de langage savent déjà produire des données structurées qui respectent un schéma précis : les bons champs, les bons types, imbriqués au bon endroit. Demandez une composition Rendr, et un modèle peut renvoyer quelque chose de parfaitement valide, qui s'analyse sans erreur et se rend sans planter. Cette partie-là est presque réglée.
+
+## Valide ne veut pas dire réussi
+
+Une composition peut être parfaitement bien formée et donner quand même une mauvaise vidéo. Des sous-titres qui apparaissent une demi-seconde avant que quelqu'un ne commence à parler. Un titre posé pile sur le seul détail visuel qui comptait. Un rythme qui survole la chute et s'attarde sur la mise en place. Rien de tout ça ne casse le fichier. Ça donne juste l'impression que personne ne faisait attention, ce qu'une chaîne entièrement automatisée ne peut justement pas se permettre, puisque personne n'y est vraiment.
+
+## Ce que l'indépendance des images apporte ici
+
+C'est le seul endroit où l'architecture de <Link to="/project/rendr">Rendr</Link> aide vraiment à résoudre son propre problème. Comme n'importe quelle image peut être rendue toute seule, AI Compositor n'a pas besoin de réussir sa composition du premier coup et de l'envoyer les yeux fermés. Il peut rendre quelques images d'exemple à partir du brouillon qu'il vient d'écrire, les regarder vraiment, et ajuster avant de lancer le rendu complet. Cette boucle, générer, prévisualiser, vérifier, corriger, c'est ce que la génération de texte seule n'a presque jamais l'occasion de faire, parce que ce qu'écrit un modèle de langage n'a en général aucun moyen rapide et peu coûteux d'être regardé avant d'être définitif.
+
+## Ce qui n'est pas encore construit : ce que veut dire « vérifier »
+
+Rendre une image d'aperçu, c'est la moitié facile de cette boucle. La moitié difficile, c'est de décider, automatiquement, si ce qu'il y a dans cette image est vraiment juste. Un modèle de vision peut regarder une image rendue et la décrire, mais décrire une image, ce n'est pas la même chose que juger si le minutage, la composition, les couleurs et le rythme servent bien la vidéo comme ils le devraient. Personne n'a encore défini ce qu'un contrôle automatique devrait vraiment vérifier, ni le niveau de confiance nécessaire avant de décider qu'une composition est assez bonne pour partir sans qu'une personne ne la voie jamais.

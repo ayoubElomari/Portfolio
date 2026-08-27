@@ -1,0 +1,53 @@
+import { Link } from "react-router-dom";
+
+import cover from "./assets/cover.svg";
+
+export const meta = {
+  slug: "render-farm",
+  title: "Rendr Farm",
+  titlePrefix: "Infrastructure; Distributed Rendering",
+  tag: "infrastructure",
+  subtitle:
+    "Splitting a render across many machines is easy. Splitting it well, without knowing the cost first, isn't.",
+  description:
+    "Rendr's frames don't depend on each other, so a composition doesn't have to render on one machine. Rendr Farm is the idea of splitting the work across many instead, and figuring out how to split it well.",
+  duration: "Unbuilt",
+  date: "2026-08-24",
+  stats: [
+    { label: "Status", value: "Idea, cost estimation not solved" },
+    {
+      label: "Open question",
+      value: "What predicts render cost before a frame renders",
+    },
+    { label: "Related idea", value: "Audio Engine, same limitation, different layer" },
+  ],
+  style: {
+    "--project-accent-color": "#4fd1c5",
+  },
+  cover,
+};
+
+# The idea
+
+<Lede>
+  <Link to="/project/rendr">Rendr</Link> can draw frame 400 of a video
+  without needing frame 399 first. Every frame stands on its own. Rendr Farm
+  takes that one property and asks a bigger question: if no frame depends on
+  any other, why render a video on one machine at all?
+</Lede>
+
+Split a composition into frame ranges, hand each range to a different machine, and let something collect the finished pieces and stitch them back into one file. That's the whole pitch, and on paper it's simple. The two hard parts are what happens before a machine starts rendering, and what happens if it doesn't finish.
+
+## Splitting the work is easy. Splitting it well is not.
+
+The naive version of this idea splits a composition into equal chunks: ten machines, ten equal ranges, done. It works, but it wastes money. A composition is almost never uniform. Ten seconds of a static background behind a talking head costs almost nothing per frame. Three seconds of a layered compositing effect, several video clips stacked with blending and color grading, can cost fifty times more per frame than the quiet stretch next to it. Split evenly, and the machine handling those three expensive seconds finishes last while nine other machines sit idle waiting on it.
+
+The fix sounds obvious: give the expensive frames to a stronger machine, and let the cheap frames run on weaker, cheaper hardware. The catch is that nobody knows which frames are expensive until they've actually been rendered, and rendering them is the exact cost this idea is trying to avoid paying twice. So the real open question behind Rendr Farm is what cheap, upfront signal actually predicts render cost accurately enough to route work on. Layer count, the presence of video versus static images, effect types, resolution, keyframe density: some combination of those is probably the answer, but "probably" isn't good enough when a bad guess means paying for the wrong machine.
+
+## The other half: recovering when a machine fails
+
+Distribute a render across ten machines and, over enough renders, one of them eventually crashes, loses its network connection, or just runs out of memory partway through its frame range. In a traditional renderer, where frame 400 depends on everything before it, that failure can force a restart from the beginning. Frame independence makes this cheap: a crashed machine's frame range is just a gap of missing frame numbers, and the range can be handed to a different machine without touching anything that already finished. That part of the idea is close to free, it falls directly out of how <Link to="/project/rendr">Rendr</Link> already works. What's not designed yet is the orchestrator itself: something that hands out ranges, watches for machines that go silent, requeues their work, and knows when every range is actually done.
+
+## Where it runs into Audio Engine
+
+There's a seam this idea doesn't get to skip, and it isn't really about Rendr Farm at all. Stitching video back together from separate machines is free, because frame independence means every chunk is already correct on its own. Audio doesn't have that property, see <Link to="/beyond/audio-engine">Audio Engine</Link>. A reverb tail or a compressor's lookahead can reach across the exact boundary where one machine's chunk ends and the next one's begins, so gluing rendered chunks back together cleanly depends on how, or whether, audio processing ever gets solved.

@@ -1,0 +1,96 @@
+/* Sits inside the summary, between two hairline-separated prose bands, so it
+   carries no panel of its own — an outer border here would fight the rules
+   above and below it and turn a light break into another box to read. */
+.se-scale {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  margin: clamp(22px, 3vh, 30px) 0 4px;
+}
+
+.se-scale__real {
+  flex-shrink: 0;
+  padding: 12px 20px 13px;
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-rule);
+  /* Same accent tick the flow diagram gives a real stage. */
+  border-top: 2px solid var(--pp-accent);
+  border-radius: 8px;
+}
+
+.se-scale__projected {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.se-scale__ghosts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.se-scale__ghost {
+  padding: 12px 20px 13px;
+  border: 1px dashed var(--pp-rule);
+  border-radius: 8px;
+}
+
+/* Uniform across real and projected, deliberately. The point being made is
+   that nothing about the system changes between them, so a size ramp would
+   argue the opposite of the caption. Solid versus outline carries the
+   difference instead. */
+.se-scale__count {
+  font-family: var(--pp-display-font);
+  font-size: clamp(1.6rem, 3.4vw, 2rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--pp-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.se-scale__ghost .se-scale__count {
+  color: var(--pp-muted);
+}
+
+.se-scale__unit,
+.se-scale__note {
+  font-family: var(--secondary-font);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pp-muted);
+}
+
+.se-scale__unit {
+  margin-top: 7px;
+}
+
+.se-scale__note {
+  margin-top: 8px;
+  letter-spacing: 0.1em;
+}
+
+/* Only stated once, under the outlined group. The real card establishes the
+   unit; the ghosts inherit it by sitting next to it, and repeating "channels"
+   three more times would be noise in a block whose whole job is to be read at
+   a glance. */
+.se-scale__note.is-projected {
+  margin-top: 0;
+}
+
+@media (max-width: 620px) {
+  .se-scale {
+    gap: 14px;
+  }
+
+  .se-scale__real,
+  .se-scale__ghost {
+    padding: 10px 16px 11px;
+  }
+}

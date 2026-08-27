@@ -1,0 +1,183 @@
+/* Three months of production, one cell per day.
+ *
+ * Like the pipeline diagram, this sits inside a `<Frame bleed="full" plain>`,
+ * so the horizontal inset is this file's job and `--pp-bleed-right` is what
+ * lines it up with the frame's own label and caption.
+ *
+ * The whole chart is one measurement chain: `--se-tl-label` + `--se-tl-gap` is
+ * the offset the axis and the footnote have to reproduce so their ticks land
+ * over the tracks. Change the label width in one place and everything follows.
+ * Below the stack breakpoint that offset collapses to zero, because the label
+ * moves above its track instead of beside it. */
+
+.se-tl {
+  --se-tl-label: 128px;
+  --se-tl-gap: 16px;
+  --se-tl-plot: calc(var(--se-tl-label) + var(--se-tl-gap));
+  --se-tl-h: 26px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-inline: var(--pp-bleed-right, 24px);
+  font-family: var(--secondary-font);
+}
+
+/* ── Month axis ──────────────────────────────────────────────────────────── */
+
+.se-tl-axis {
+  position: relative;
+  height: 15px;
+  margin-left: var(--se-tl-plot);
+}
+
+.se-tl-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--x);
+  padding-left: 6px;
+  border-left: 1px solid var(--pp-rule);
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--pp-faint);
+}
+
+/* ── A lane ──────────────────────────────────────────────────────────────── */
+
+.se-tl-lane {
+  display: grid;
+  grid-template-columns: var(--se-tl-label) minmax(0, 1fr);
+  column-gap: var(--se-tl-gap);
+  align-items: center;
+}
+
+.se-tl-head {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.se-tl-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--pp-ink);
+}
+
+.se-tl-meta {
+  font-family: var(--code-font);
+  font-size: 0.625rem;
+  line-height: 1.4;
+  color: var(--pp-faint);
+}
+
+.se-tl-track {
+  position: relative;
+  display: flex;
+  gap: 1px;
+  height: var(--se-tl-h);
+}
+
+/* ── A day ───────────────────────────────────────────────────────────────── */
+
+.se-tl-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 1px;
+
+  /* Before the channel existed, or after it stopped. */
+  &.is-out {
+    background-color: color-mix(in srgb, var(--pp-ink) 4%, transparent);
+  }
+
+  /* Running, but shipped nothing that day. */
+  &.is-idle {
+    background-color: color-mix(in srgb, var(--pp-ink) 11%, transparent);
+  }
+
+  &.is-a1 {
+    background-color: color-mix(in srgb, var(--pp-accent) 38%, transparent);
+  }
+  &.is-a2 {
+    background-color: color-mix(in srgb, var(--pp-accent) 66%, transparent);
+  }
+  &.is-a3 {
+    background-color: var(--pp-accent);
+  }
+
+  /* CutFun's one and only day. A single cell is ~3px wide on a phone, which is
+     small enough to read as noise, so this one gets a floor and a halo. */
+  &.is-solo {
+    min-width: 5px;
+    border-radius: 2px;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--pp-accent) 30%, transparent),
+      0 0 12px color-mix(in srgb, var(--pp-accent) 45%, transparent);
+  }
+}
+
+/* Month boundaries, drawn over the cells so they line up with the axis. */
+.se-tl-rule {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: var(--x);
+  width: 1px;
+  background-color: color-mix(in srgb, var(--pp-ink) 13%, transparent);
+  pointer-events: none;
+}
+
+.se-tl-tag {
+  position: absolute;
+  left: var(--x);
+  top: 50%;
+  translate: 8px -50%;
+  font-family: var(--code-font);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--pp-faint);
+}
+
+/* ── Footnote ────────────────────────────────────────────────────────────── */
+
+.se-tl-foot {
+  margin: 2px 0 0;
+  margin-left: var(--se-tl-plot);
+  max-width: 46ch;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--pp-faint);
+}
+
+/* ── Stacked ─────────────────────────────────────────────────────────────── */
+
+@media screen and (max-width: 619px) {
+  .se-tl {
+    --se-tl-plot: 0px;
+    --se-tl-h: 20px;
+    gap: 14px;
+  }
+
+  .se-tl-lane {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 5px;
+  }
+
+  .se-tl-head {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .se-tl-track {
+    gap: 0.5px;
+  }
+}

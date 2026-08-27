@@ -1,0 +1,54 @@
+import { Link } from "react-router-dom";
+
+import cover from "./assets/cover.svg";
+
+export const meta = {
+  slug: "render-farm",
+  title: "Rendr Farm",
+  titlePrefix: "Infrastructure ; Rendu distribué",
+  tag: "infrastructure",
+  subtitle:
+    "Répartir un rendu sur plusieurs machines, c'est facile. Bien le répartir sans connaître son coût à l'avance, ça l'est beaucoup moins.",
+  description:
+    "Les images de Rendr ne dépendent pas les unes des autres, donc une composition n'a pas besoin de tourner sur une seule machine. Rendr Farm part de cette idée pour répartir le travail sur plusieurs machines, et pour trouver comment bien le répartir.",
+  duration: "Non construit",
+  date: "2026-08-24",
+  stats: [
+    { label: "Statut", value: "Idée, l'estimation du coût n'est pas résolue" },
+    {
+      label: "Question ouverte",
+      value: "Quel signal prédit le coût d'une image avant qu'elle ne soit rendue",
+    },
+    { label: "Idée liée", value: "Audio Engine, même limite, à un autre niveau" },
+  ],
+  style: {
+    "--project-accent-color": "#4fd1c5",
+  },
+  cover,
+};
+
+# L'idée
+
+<Lede>
+  <Link to="/project/rendr">Rendr</Link> peut dessiner l'image 400 d'une
+  vidéo sans avoir besoin de l'image 399 avant. Chaque image tient debout
+  toute seule. Rendr Farm part de cette seule propriété et pose une question
+  plus large : si aucune image ne dépend d'une autre, pourquoi rendre une
+  vidéo sur une seule machine ?
+</Lede>
+
+Découper une composition en plages d'images, confier chaque plage à une machine différente, puis rassembler les morceaux terminés dans un seul fichier. Voilà toute l'idée, et sur le papier, elle est simple. Les deux vraies difficultés se situent avant qu'une machine ne commence à rendre, et après, si elle ne termine pas.
+
+## Découper le travail est facile. Bien le découper ne l'est pas.
+
+La version naïve de cette idée coupe une composition en portions égales : dix machines, dix plages identiques, terminé. Ça fonctionne, mais ça gaspille de l'argent. Une composition n'est presque jamais uniforme. Dix secondes de fond statique derrière une personne qui parle coûtent presque rien par image. Trois secondes d'un effet de composition, plusieurs clips vidéo superposés avec fondus et étalonnage, peuvent coûter cinquante fois plus cher par image que les secondes tranquilles juste à côté. Découpé également, la machine qui hérite de ces trois secondes finit en dernier pendant que neuf autres attendent les bras croisés.
+
+La solution paraît évidente : donner les images coûteuses à une machine puissante, et laisser les images simples tourner sur du matériel plus modeste. Le problème, c'est que personne ne sait quelles images sont coûteuses avant de les avoir réellement rendues, et les rendre, c'est justement le coût que cette idée cherche à éviter de payer deux fois. La vraie question derrière Rendr Farm, c'est donc de trouver quel signal, calculable rapidement et à l'avance, prédit correctement le coût d'un rendu. Le nombre de calques, la présence de vidéo plutôt que d'images fixes, le type d'effets, la résolution, la densité des images clés : une combinaison de tout ça est probablement la réponse, mais « probablement » ne suffit pas quand une mauvaise estimation veut dire payer pour la mauvaise machine.
+
+## L'autre moitié du problème : récupérer après une panne
+
+Répartir un rendu sur dix machines, et tôt ou tard, sur assez de rendus, l'une d'elles finit par planter, perdre sa connexion réseau, ou simplement manquer de mémoire en plein milieu de sa plage d'images. Dans un moteur classique, où l'image 400 dépend de tout ce qui la précède, cette panne peut forcer à tout recommencer depuis le début. L'indépendance des images rend ça presque gratuit : la plage d'une machine qui a planté n'est qu'un trou dans la suite des numéros d'image, et cette plage exacte peut être confiée à une autre machine sans toucher à ce qui est déjà terminé. Cette partie de l'idée découle directement de la façon dont <Link to="/project/rendr">Rendr</Link> fonctionne déjà. Ce qui reste à concevoir, c'est l'orchestrateur lui-même : ce qui distribue les plages, surveille les machines qui deviennent silencieuses, relance leur travail ailleurs, et sait reconnaître le moment où tout est vraiment terminé.
+
+## Là où ça rejoint Audio Engine
+
+Il y a une couture que cette idée ne peut pas éviter, et elle ne concerne pas vraiment Rendr Farm en tant que tel. Recoller de la vidéo rendue par des machines séparées ne coûte rien, parce que l'indépendance des images garantit que chaque morceau est déjà correct tout seul. L'audio n'a pas cette propriété, voir <Link to="/beyond/audio-engine">Audio Engine</Link>. La traîne d'une réverbération ou l'anticipation d'un compresseur peut déborder exactement sur la frontière où le morceau d'une machine s'arrête et où celui de la suivante commence. Recoller proprement les morceaux dépend donc de la façon dont le traitement audio sera un jour résolu, ou pas.

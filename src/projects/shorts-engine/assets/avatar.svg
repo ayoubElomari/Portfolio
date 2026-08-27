@@ -1,0 +1,25 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Stand-in avatar for the demo's post card.
+
+    Original artwork, not a photograph of anyone: the card belongs to a
+    synthetic account, so a real face on it would imply a person who does not
+    exist. Swap this for a real image by dropping the file into this folder and
+    changing the one `avatar` entry in `compositions/demo.js`.
+  -->
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a4a63"/>
+      <stop offset="100%" stop-color="#22304a"/>
+    </linearGradient>
+    <clipPath id="round">
+      <circle cx="64" cy="64" r="64"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="128" height="128" fill="url(#skin)"/>
+    <circle cx="64" cy="52" r="23" fill="#e9dccb"/>
+    <path d="M14 128c0-29 22-46 50-46s50 17 50 46z" fill="#e9dccb"/>
+    <path d="M41 44c2-16 12-25 23-25s21 9 23 25c-8-6-14-9-23-9s-15 3-23 9z" fill="#2b2118"/>
+  </g>
+</svg>

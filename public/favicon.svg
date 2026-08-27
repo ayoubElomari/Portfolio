@@ -1,0 +1,19 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+  width="64"
+  height="64"
+  role="img"
+  aria-label="Ayoub El Omari"
+>
+  <!-- Matches the header's `AYOUB.` logotype: cream A on black, accent dot.
+       Colours are hard-coded because a favicon can't read the page's CSS
+       custom properties — if --accent-color or --primary-color change in
+       src/index.css, update #fa4e26 / #faeada here by hand. -->
+  <rect width="64" height="64" fill="#000000" />
+  <path
+    d="M13 49 L28.6 15 h6.8 L51 49 h-8.1 l-3.3 -7.6 H24.4 L21.1 49 Z M27.2 34.9 h9.6 L32 23.7 Z"
+    fill="#faeada"
+  />
+  <circle cx="54.5" cy="46.5" r="4" fill="#fa4e26" />
+</svg>

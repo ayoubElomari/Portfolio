@@ -1,0 +1,132 @@
+@use "./kit" as kit;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   The v1 round trip, section 2. Third hand-authored figure on this page.
+
+   Chip, arrow and reveal come from _kit.scss, shared with the capture path
+   figure in section 4. Layout stays local: that figure's rows are narrower
+   and stand up at a different width than this one's.
+
+   Inherits the kit set by FrameIndependence.scss and RenderFarm.scss: ink on
+   the page rather than a panel, 1px lines with 2px reserved for the accent,
+   type at a fixed size rather than scaling with the figure.
+
+   ── Every rule here leads with two classes, deliberately ──────────────────
+   The shared article stylesheet styles bare elements inside the reading
+   column, and it does it at a specificity a single class cannot beat:
+
+     article.project-article ul, article.project-article ol   (0,1,2)
+       display: flex; flex-direction: column;
+       padding-left: 24px; gap: 6px;
+     article.project-article ol li                            (0,1,3)
+       padding-left: 4px;
+
+   A `.rendr-v1-flow` rule is (0,1,0) and loses every one of those. The first
+   version of this file lost all four: the pipeline rendered as a column at
+   every width, and each stage had 4px of padding on the left against 16px on
+   the right. Both looked like design mistakes rather than cascade ones.
+
+   `.rendr-v1 .rendr-v1-flow` is (0,2,0), which outranks both, so the nesting
+   below is load bearing and not just tidiness. The same applies to any other
+   figure in this folder that reaches for a semantic tag: `<ol>`, `<ul>`,
+   `<img>` and `<table>` all carry article-level styling already.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.rendr-v1 {
+  margin: 6px 0 2px;
+
+  @include kit.reveal;
+
+  .rendr-v1-flow {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    /* 8px here and 8px of the link's own width on each side puts 24px between
+       two stages, which is the kit's sibling rhythm. */
+    gap: 8px;
+    margin: 0;
+    /* Overrides the article's own list indent. */
+    padding: 0;
+    list-style: none;
+  }
+
+  .rendr-v1-stage {
+    @include kit.chip;
+
+    /* The two stages the browser never actually needed, and the two the rest
+       of the article removes. This is the figure's one accent, spent on a
+       pair because the pair is the single idea. */
+    &.is-convert {
+      @include kit.chip-accent;
+    }
+  }
+
+  .rendr-v1-link {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    color: var(--pp-whisper);
+  }
+
+  .rendr-v1-chevron {
+    @include kit.chevron;
+  }
+
+  /* ── Standing the pipeline up on narrow screens ────────────────────────
+     The row measures ~598px. The reading column holds at its full 656px
+     until the viewport itself gets narrow, so this threshold comes from
+     where the *column* falls under 598, not from a round viewport number:
+     `column = viewport - 2 * clamp(20px, 5vw, 72px)` crosses 598 at roughly
+     a 664px viewport, so 680 leaves a margin.
+
+     Two earlier versions got this wrong in opposite directions. The first
+     broke at 760px and stood the figure up on screens where the row fitted
+     fine. The second used 640px, derived from a 561px row measured while the
+     article stylesheet was still stealing 12px of padding from every stage,
+     which left a band around 650px where the row no longer fitted and the
+     media query had not yet fired. Re-measure the row before touching this.
+
+     Standing it up is a real layout rather than a collapsed row: stages go
+     full width so they stack as one even spine instead of a ragged centred
+     pile, and each link becomes a proper downward arrow, a short stem with
+     the chevron at the end of it, matching the stems in the render farm
+     figure. */
+  @media (max-width: 680px) {
+    .rendr-v1-flow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .rendr-v1-stage {
+      text-align: center;
+    }
+
+    .rendr-v1-link {
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+
+      /* The stem the chevron sits at the end of. */
+      &::before {
+        content: "";
+        width: 1px;
+        height: 12px;
+        background-color: currentColor;
+      }
+    }
+
+    .rendr-v1-chevron {
+      /* Rotating the box leaves a 12px-tall footprint for an 8px-tall mark,
+         so the negative margin takes the difference back and keeps the space
+         either side of the arrow even. */
+      transform: rotate(90deg);
+      margin: -2px 0;
+    }
+  }
+}
+
+.rendr-v1-sr {
+  @include kit.sr-only;
+}

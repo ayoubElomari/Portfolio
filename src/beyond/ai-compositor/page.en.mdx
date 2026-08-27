@@ -1,0 +1,49 @@
+import { Link } from "react-router-dom";
+
+import cover from "./assets/cover.svg";
+
+export const meta = {
+  slug: "ai-compositor",
+  title: "AI Compositor",
+  titlePrefix: "AI; Automation",
+  tag: "automation",
+  subtitle:
+    "Rendr can render a preview instantly, which means an AI writing a composition could check its own work before anyone sees it.",
+  description:
+    "A Rendr composition is just a JSON file, so in principle an AI model could write one directly instead of a human building it by hand. The hard part isn't the format, it's teaching something to judge whether the result actually looks good.",
+  duration: "Unbuilt",
+  date: "2026-08-27",
+  stats: [
+    { label: "Status", value: "Idea, no evaluation method yet" },
+    { label: "Open question", value: "What an automated reviewer should check for" },
+    { label: "Depends on", value: "Rendr's frame independence, for cheap previews" },
+  ],
+  style: {
+    "--project-accent-color": "#f472b6",
+  },
+  cover,
+};
+
+# The idea
+
+<Lede>
+  A <Link to="/project/rendr">Rendr</Link> composition is a JSON file, not a
+  video someone edited by hand. That means, in principle, something other
+  than a person could write it. AI Compositor is the idea of an AI model
+  generating a full composition directly: pick a topic, get a finished video
+  back, no timeline in between.
+</Lede>
+
+Getting an AI to output something in the right shape isn't the hard part anymore. Language models are already good at producing structured data that matches a schema exactly: the right fields, the right types, nested in the right places. Ask for a Rendr composition and a model can hand back something that's valid JSON, parses correctly, and renders without crashing. That part is close to solved.
+
+## Valid isn't the same as good
+
+A composition can be perfectly well-formed and still be a bad video. Captions that appear half a second before anyone starts speaking. A title card sitting directly on top of the one visual detail that mattered. Pacing that rushes past the punchline and lingers on the setup. None of that breaks the file. It just makes the result look like nobody was paying attention, which is exactly what a fully automated pipeline can't afford, since nobody actually is.
+
+## What frame independence buys here
+
+This is the one place <Link to="/project/rendr">Rendr</Link>'s architecture actually helps solve its own problem. Because any frame can be rendered on its own, an AI Compositor doesn't have to get a composition right on the first try and ship it blind. It can render a handful of sample frames from the draft it just wrote, actually look at them, and adjust before committing to a full render. That loop, generate, preview, check, revise, is something most text-only generation never gets to have, because most of what a language model writes has no fast, cheap way to be looked at before it's final.
+
+## The part nobody's built: what "checking" means
+
+Rendering a preview frame is the easy half of that loop. The hard half is deciding, automatically, whether what's in that frame is actually right. A vision model can look at a rendered frame and describe it, but describing a frame isn't the same as judging whether the timing, the composition, the color, and the pacing all serve the video the way they're supposed to. Nobody's defined what an automated reviewer should actually be checking for, or how confident it needs to be before it decides a composition is good enough to ship without a person ever seeing it.

@@ -1,0 +1,217 @@
+import { Link } from "react-router-dom";
+import cover from "./assets/cover.svg";
+import PipelineDiagram from "./components/PipelineDiagram.jsx";
+import PhoneAlert from "./components/PhoneAlert.jsx";
+import ChannelCompare from "./components/ChannelCompare.jsx";
+import TerminalLog from "./components/TerminalLog.jsx";
+import ProductionTimeline from "./components/ProductionTimeline.jsx";
+import { LazyMediumDemo } from "./live-demos";
+import { heroComposition, heroEdits } from "./compositions/shortsEngineDemo.js";
+
+export const meta = {
+  slug: "shorts-engine",
+  title: "Shorts Engine",
+  titlePrefix: "Automation; Content Pipeline",
+  subtitle:
+    "Three channels. Hundreds of videos a month. Zero people running it, including me, for two weeks in Morocco.",
+  description:
+    "A Reddit-to-YouTube pipeline that wrote, rendered, and uploaded its own videos on a schedule, completely unattended, for three months straight.",
+  duration: "3 months",
+  date: "2025-07",
+  stats: [
+    { label: "Videos shipped", value: "417" },
+    { label: "Channels running", value: "3" },
+    { label: "Engine builds survived", value: "5" },
+  ],
+  style: {
+    "--project-accent-color": "#ff6a3d",
+  },
+  cover,
+};
+
+<Lede>
+  For three months, a Python script ran a small content studio without me. It
+  found the stories, wrote the scripts, rendered the video, and posted it, on
+  schedule, across three channels. My job was to check my phone once in a
+  while and find out it had already happened.
+</Lede>
+
+<Aside
+  media={<PhoneAlert />}
+  title="The only status update was a phone buzz"
+  side="right"
+>
+
+The best two weeks of this project were the two weeks I spent nowhere near a
+laptop. I flew to Morocco with the whole pipeline running in the cloud: a
+scheduler deciding when to post, a model deciding what to say, and a render
+engine turning JSON into video, on its own clock. The only thread connecting
+me to any of it was a push notification that would buzz if something broke.
+
+Nothing broke enough to matter. That was the first time automation stopped
+being a demo and started being a machine I actually trusted.
+
+</Aside>
+
+<span id="more_in_depth"></span>
+
+## The pipeline, start to finish
+
+Every video, on every channel, went through the same five steps, on a loop,
+without anyone watching.
+
+<Frame label="Pipeline" caption="Fetch, rewrite, compose, render, upload, all on one clock. A bad video just becomes an error row, not a crashed process." bleed="full" plain>
+  <PipelineDiagram />
+</Frame>
+
+<Flow caption="One cycle, for one channel, at a time.">
+  <FlowStep note="A bot fetches Reddit posts and filters for ones worth turning into a story.">
+    Fetch
+  </FlowStep>
+  <FlowStep note="An LLM rewrites it in that channel's voice, strips Reddit's own formatting, and writes a hook built to stop a scroll.">
+    Rewrite
+  </FlowStep>
+  <FlowStep note="Voiceover, word-level timing, a background clip, and a Reddit-post overlay get assembled into one JSON composition.">
+    Compose
+  </FlowStep>
+  <FlowStep note="Rendr turns that JSON into an .mp4, frame by frame, and reports back a plain progress line for every frame.">
+    Render
+  </FlowStep>
+  <FlowStep note="The video uploads to YouTube in 8MB chunks, the local file gets deleted immediately, and the queue moves on.">
+    Upload
+  </FlowStep>
+</Flow>
+
+## The whole bridge to Rendr is one subprocess call
+
+Shorts Engine never imports Rendr. It shells out to it, the same way it would
+shell out to `ffmpeg`:
+
+```python
+command = ["rendr", "-v", rendr_version, "-o", video_path, "-j", json_path]
+```
+
+Every line of progress becomes exactly this, with nothing structured behind
+it:
+
+<TerminalLog
+  lines={[
+    { type: "progress", text: "Rendering video: ma_deuxieme_pote_part_1.mp4" },
+    { type: "progress", text: "frame 412/1809" },
+    { type: "progress", text: "frame 890/1809" },
+    { type: "error", text: "codec warning: falling back to software decode" },
+    { type: "progress", text: "frame 1809/1809" },
+    { type: "info", text: "exit code 0" },
+  ]}
+/>
+
+No percentage field, no severity level, nothing but text and an exit code.
+That thin, honest seam is the entire contract between two of my own
+projects: one produces `.rendr.json` files, the other one turns them into
+video. Neither one knows anything about the other beyond that.
+
+<span id="live_demo"></span>
+
+## Same format, rebuilt: try the captions
+
+The engine Shorts Engine actually ran on is retired. What it wrote to disk
+was still, at its core, a JSON timeline: elements, timing, style. That idea
+survived into [Rendr's current rewrite](/project/rendr), which is what's
+actually running the composition below, live, in your browser.
+
+Change the accent, the highlight color, how many words show per card, even
+the caption size, and watch it respond in real time.
+
+<LazyMediumDemo
+  composition={heroComposition}
+  edits={heroEdits}
+  filename="short.rendr.json"
+  posterFrame={0}
+/>
+
+The real videos had a voice track and background music under all of this.
+The current engine doesn't do audio yet, so treat this as the silent
+director's cut: same card, same word-synced captions, same idea, just on
+mute.
+
+## One pipeline, two completely different shows
+
+QuickLore and GesoLore ran through the exact same code. They don't look, read,
+or sound like the same product.
+
+<ChannelCompare />
+
+<Facts variant="cards" bleed="wide">
+  <Fact label="QuickLore" value="255 videos" note="English, r/stories, 82 production days, 3 posts a day" />
+  <Fact label="GesoLore" value="161 videos" note="French, hyper-casual persona, 60 production days, 3 posts a day" />
+  <Fact label="CutFun" value="1 video" note="A third format, tried once, cut fast" />
+</Facts>
+
+QuickLore's prompt asks for a clean, conversational rewrite: first person,
+Reddit artifacts stripped out, a shock-hook opener that trades literal
+accuracy for attention. GesoLore's prompt asks for something else entirely: a
+"French TikTok ghostwriter" persona, written in hyper-casual slang, that
+stays obsessively faithful to whatever its own hook just promised, with
+every mid-story part ending on a cliffhanger built to pull a viewer into the
+next one. Same pipeline, same render engine, same publish queue. Two
+different writers living inside one prompt template.
+
+The visual identity is just as split, and it's set entirely by a small style
+file per channel: QuickLore in Oswald at a restrained size and Reddit orange,
+GesoLore in the same font pushed larger, wider, heavier, and hot pink. Neither
+channel required a line of new code. They required a different JSON.
+
+## Three months, on the record
+
+<Frame label="Production activity" caption="Three lanes, three different rhythms, one abrupt stop in late October." bleed="full" plain>
+  <ProductionTimeline />
+</Frame>
+
+<Callout title="What the archive actually shows" tone="note">
+  417 rendered videos across 143 production days, July 21 to October 29,
+  2025. The publish queue's own record: 411 rows, 405 uploaded, 4 errored, 2
+  rendered but never posted. Across three months of real, automated uploads,
+  the whole thing failed outright four times.
+</Callout>
+
+## What actually ended it
+
+Two separate things killed this, and they deserve to stay separate.
+
+The channels got progressively shadow-banned, most likely flagged as
+automated from very early on. Views cratered to almost nothing. No render
+engine fixes that; it's a trust problem with the platform, not a bug in the
+pipeline.
+
+The other problem was mine to fix. Rendering one minute of video took about
+20 seconds, and only by running eight to ten CPU threads at full throttle.
+Every decoded frame got base64-encoded and stuffed directly into a JSON
+payload passed into a browser tab. It worked. It was also exactly the kind of
+architecture that stops working the moment you ask it to do more, which is
+the entire reason [Rendr got rebuilt from the ground up](/project/rendr)
+around a browser that decodes and discards a frame instead of hoarding it as
+a giant base64 string.
+
+Somewhere in the source, a function still starts with a comment its author
+never deleted:
+
+<TerminalLog
+  lines={[
+    { type: "info", text: '"""NOTE FROM DEVELOPPER: Uploading videos has' },
+    { type: "info", text: 'been stopped for now."""' },
+    { type: "progress", text: "return" },
+  ]}
+/>
+
+That's what actually pausing your own project looks like. Not a clean
+shutdown commit, a comment nobody went back to clean up, because there was
+never a good moment to.
+
+## Where it led
+
+Shorts Engine never got to run against the fixed render engine. It didn't
+need to, to be worth the three months: it proved a fully unattended
+Reddit-to-YouTube pipeline could run at real volume, across three channels,
+through real platform APIs, with nobody watching, for a Moroccan vacation and
+then some. The bottleneck it hit is the same one that shaped everything
+[Rendr](/project/rendr) became afterward.

@@ -1,0 +1,51 @@
+/* The placeholder a mini demo arrives into. See LazyBench.scss for the same
+ * pattern at full-bleed width — this is the reading-column version: no gutter
+ * insertion of its own, since a mini demo sits inside a `<Frame plain>` in the
+ * article body, which already owns its own width and inset.
+ *
+ * Heights are estimated from `.rendr-mini`'s own measurements (a 340px capped
+ * stage plus its transport and fps row on desktop; the same content stacked
+ * single-column below 760px, where `.rm-code` moves under `.rm-view` instead of
+ * beside it). Approximate on purpose — the tell that they have drifted is content
+ * shifting on first load, not a pixel-perfect match. */
+
+.rm-lazy-slot {
+  width: 100%;
+}
+
+.rm-lazy-skeleton {
+  height: 460px;
+  border: 1px solid var(--pp-rule);
+  border-radius: 4px;
+  background:
+    linear-gradient(
+      110deg,
+      var(--pp-surface) 30%,
+      var(--pp-surface-raised) 50%,
+      var(--pp-surface) 70%
+    );
+  background-size: 220% 100%;
+  animation: rm-lazy-shimmer 1.6s ease-in-out infinite;
+}
+
+/* `.rendr-mini` stacks to one column here — see MiniDemo.scss. */
+@media (max-width: 760px) {
+  .rm-lazy-skeleton {
+    height: 720px;
+  }
+}
+
+@keyframes rm-lazy-shimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rm-lazy-skeleton {
+    animation: none;
+  }
+}

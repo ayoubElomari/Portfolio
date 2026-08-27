@@ -1,0 +1,226 @@
+/* The transport.
+ *
+ * The one rule that shapes it: the buttons and the readout stay on ONE line at
+ * every width. They used to wrap onto separate rows on a phone, which read as
+ * two unrelated control strips instead of one transport. The scrubber is
+ * allowed to take its own row; the controls are not.
+ *
+ * Scoped under `.se-demo` for the same reason as MediumDemo.scss — see the
+ * long note at the top of that file. Another project's copy of this kit ships
+ * the same `.rt-*` class names, and both stylesheets can be in the document at
+ * once during a single-page session. */
+
+.se-demo {
+  .rt-transport {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 9px 12px;
+    border-top: 1px solid var(--pp-rule);
+    background: var(--pp-surface-raised);
+  }
+
+  .rt-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .rt-play,
+  .rt-btn {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--pp-rule);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--pp-body);
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease,
+      background-color 0.18s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--rendr-accent);
+      background: color-mix(in srgb, var(--rendr-accent) 12%, transparent);
+      color: var(--pp-ink);
+    }
+
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--rendr-accent) 20%, transparent);
+    }
+
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  /* The one primary action in the whole demo: round, filled, and a size up
+     from the frame-steppers beside it, so "start it" is never hunted for. */
+  .rt-play {
+    width: 36px;
+    height: 36px;
+    margin-right: 2px;
+    border-radius: 50%;
+    background: var(--rendr-accent);
+    border-color: var(--rendr-accent);
+    color: var(--pp-on-accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--rendr-accent) 45%, transparent);
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.22s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--rendr-accent-bright);
+      border-color: var(--rendr-accent-bright);
+      color: var(--pp-on-accent);
+      box-shadow: 0 0 0 5px
+        color-mix(in srgb, var(--rendr-accent) 18%, transparent);
+    }
+
+    &:active:not(:disabled) {
+      background: var(--rendr-accent);
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--rendr-accent) 30%, transparent);
+    }
+  }
+
+  /* Tabular figures and a fixed slot per field, so counting doesn't shift the
+     row. */
+  .rt-readout {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-left: auto;
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .rt-frame {
+    color: var(--rendr-accent);
+  }
+
+  .rt-total,
+  .rt-time {
+    color: var(--pp-whisper);
+  }
+
+  /**
+   * The speed toggle, wearing the output settings' chip.
+   *
+   * It is the same *kind* of control as the fps chips — a setting with an on
+   * state, not an action — so it reads as one.
+   */
+  .rt-rate {
+    flex: 0 0 auto;
+    margin-left: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rt-cost {
+    flex: 0 0 auto;
+    padding-left: 10px;
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    cursor: help;
+    white-space: nowrap;
+
+    em {
+      font-style: normal;
+      opacity: 0.65;
+    }
+  }
+
+  .rt-range-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+  }
+
+  /* Group-of-pictures boundaries, drawn behind the scrubber. */
+  .rt-marks {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 50%;
+    height: 9px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .rt-mark {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: color-mix(in srgb, var(--rendr-accent) 55%, transparent);
+  }
+
+  .rt-range {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--rendr-accent);
+    cursor: ew-resize;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .rt-time {
+      /* First thing to go: frame number and total carry the meaning. */
+      display: none;
+    }
+
+    .rt-cost {
+      display: none;
+    }
+
+    .rt-play,
+    .rt-btn {
+      width: 38px;
+      height: 38px;
+    }
+
+    .rt-play {
+      width: 42px;
+      height: 42px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rt-play,
+    .rt-btn {
+      transition: none;
+    }
+  }
+}

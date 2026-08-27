@@ -1,0 +1,62 @@
+/* The log panel.
+ *
+ * Two constraints shape this file. The panel has to survive a 2-line set and a
+ * 6-line set without looking under- or over-built, and a single long line must
+ * never widen the page — so the scroll container is the body, not the article.
+ *
+ * `.se-log-line` is `width: max-content; min-width: 100%` on purpose: a block
+ * whose text merely overflows contributes scrollable overflow but leaves the
+ * container's trailing padding behind the scroll. Sizing each line to its own
+ * content makes the scroll width honest and keeps the right padding. */
+
+.se-log {
+  overflow: hidden;
+  border: 1px solid var(--pp-rule);
+  border-radius: var(--pp-radius-sm, 8px);
+  background-color: var(--code-bg);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pp-accent) 4%, transparent) 0%,
+    transparent 46%
+  );
+}
+
+.se-log-body {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  margin: 0;
+  padding: 14px 16px;
+  font-family: var(--code-font);
+  font-size: 0.8125rem;
+  line-height: 1.75;
+  letter-spacing: 0;
+  tab-size: 2;
+  font-variant-ligatures: none;
+  white-space: pre;
+  color: var(--code-color);
+}
+
+.se-log-line {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+
+  /* info — the default, and what an unlabelled line reads as */
+  color: var(--pp-body);
+
+  &.is-progress {
+    color: var(--pp-faint);
+  }
+
+  &.is-error {
+    color: #ff8f6b;
+  }
+}
+
+@media screen and (max-width: 559px) {
+  .se-log-body {
+    padding: 12px 13px;
+    font-size: 0.75rem;
+    line-height: 1.7;
+  }
+}

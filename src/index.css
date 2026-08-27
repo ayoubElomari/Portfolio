@@ -1,0 +1,218 @@
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Global variables */
+  --primary-color: #faeada;
+  --secondary-color: #ffffff;
+  --third-color: #999999;
+  --border-color: #302d2a;
+  --bg-color: #000000;
+  --accent-color: #fa4e26;
+  --secondary-accent-color: #9c000b;
+
+  --easing: cubic-bezier(0.8, -0.4, 0.5, 1);
+  --primary-font: "Akshar", sans-serif;
+  --secondary-font: "Inter", sans-serif;
+  --article-font: "Raleway", sans-serif;
+
+  --code-font: "Fira Code", monospace;
+  --code-bg: #070707;
+  --code-color: #dcdcdc;
+
+  /* Red Dead Redemption 2 colour grade — a true single-hue amber duotone:
+     nothing of the photo's original colour survives, only shades of the one
+     golden tone. Tunable per-usage by overriding any of these on a parent,
+     e.g. `style={{ "--rdr2-hue": "14deg" }}`. */
+  --rdr2-contrast: 1.35;
+  --rdr2-brightness: 0.71;
+  --rdr2-saturate: 1.1;
+  --rdr2-hue: -8deg;
+  /* Pure black, deliberately: compositing black over a colour is a scalar
+     multiply, so it darkens the edges without pulling them off the 43.67
+     hue ray. A tinted vignette would introduce a second hue. */
+  --rdr2-vignette: rgba(0, 0, 0, 0.62);
+  --rdr2-grain-opacity: 0.14;
+}
+
+/* ── Reusable RDR2 grade ───────────────────────────────────────────────────
+   Two opt-in pieces, usable on any image anywhere on the site:
+     .rdr2-grade  — the colour filter itself, put it on the <img>.
+     .rdr2-frame  — wrapper adding the vignette + film grain passes.
+   Use either alone or both together. */
+
+/* Filter order is load-bearing, don't reshuffle it:
+     1. grayscale(1) collapses every pixel to (L,L,L) — this is what
+        guarantees no original colour can survive. A partial sepia() alone
+        leaves the source colours showing through.
+     2. contrast/brightness run while the image is still neutral, so they
+        can't skew the tint (an affine op on unequal R/G/B would drift hue
+        differently at each brightness level).
+     3. sepia(1) -> saturate -> hue-rotate are all linear, so they map that
+        neutral ramp to L x (a single fixed colour vector). Every output
+        pixel therefore shares one hue and differs only in lightness —
+        a real duotone, not a "mostly warm" image.
+
+   Careful with --rdr2-brightness / --rdr2-saturate: the single-hue property
+   only holds while nothing clips at 1.0. sepia(1)'s red row sums to 1.351, so
+   bright pixels blow out red first and drift yellow-green. 0.74/1.1 is tuned
+   to peak at ~0.985 — raising either reintroduces the drift this grade exists
+   to avoid. Verified numerically: every non-black output lands on hue 43.67. */
+.rdr2-grade {
+  filter: grayscale(1) contrast(var(--rdr2-contrast))
+    brightness(var(--rdr2-brightness)) sepia(1) saturate(var(--rdr2-saturate))
+    hue-rotate(var(--rdr2-hue));
+}
+
+/* ── Grade-in ──────────────────────────────────────────────────────────────
+   Opt-in companion to `.rdr2-grade`: plays the grade on rather than having it
+   already applied, so the photo arrives in full colour and settles into the
+   duotone. Add `.rdr2-grade-in` alongside `.rdr2-grade` (usually once the
+   image has actually decoded — animating a frame that hasn't painted wastes
+   the whole effect).
+
+   The keyframe's `to` MUST stay byte-identical to `.rdr2-grade`'s filter,
+   including reading the same custom properties. `filter` interpolates
+   function-by-function only while the two lists match in order and length,
+   which is also why `from` spells out all six functions at their identity
+   values instead of saying `none`.
+
+   Deliberate, and worth being explicit about: the *intermediate* frames are
+   not single-hue. Partial sepia lets the source colours through — that's the
+   entire point of the transition. The single-hue guarantee documented above
+   applies to the resting state, which this lands on exactly. */
+@keyframes rdr2-grade-in {
+  from {
+    filter: grayscale(0) contrast(1) brightness(1) sepia(0) saturate(1)
+      hue-rotate(0deg);
+  }
+  to {
+    filter: grayscale(1) contrast(var(--rdr2-contrast))
+      brightness(var(--rdr2-brightness)) sepia(1) saturate(var(--rdr2-saturate))
+      hue-rotate(var(--rdr2-hue));
+  }
+}
+
+@keyframes rdr2-frame-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Curve: RDR2's own transition timing isn't published, so this approximates
+   the observable feel of its cinematic grade coming on — a quick onset that
+   covers most of the change early, then a long slow settle, the way a camera
+   exposure lands rather than a UI easing. Roughly easeOutQuart. Retune via
+   the custom properties, not by editing the keyframes. */
+.rdr2-grade-in {
+  animation: rdr2-grade-in var(--rdr2-in-duration, 1900ms)
+    var(--rdr2-in-easing, cubic-bezier(0.25, 1, 0.5, 1))
+    var(--rdr2-in-delay, 120ms) both;
+}
+
+/* The vignette and grain ramp with it — arriving pre-applied over a
+   full-colour photo reads as a dirty frame rather than a grade. Slightly
+   longer and lazier so they trail the colour shift instead of racing it. */
+.rdr2-grade-in.rdr2-frame::before,
+.rdr2-grade-in.rdr2-frame::after {
+  animation: rdr2-frame-in
+    calc(var(--rdr2-in-duration, 1900ms) * 1.15) ease-out
+    var(--rdr2-in-delay, 120ms) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rdr2-grade-in,
+  .rdr2-grade-in.rdr2-frame::before,
+  .rdr2-grade-in.rdr2-frame::after {
+    animation: none;
+  }
+}
+
+.rdr2-frame {
+  position: relative;
+}
+
+/* Film grain. The feColorMatrix saturate=0 is not optional: raw feTurbulence
+   generates each channel independently, i.e. *colour* noise, which speckles
+   stray reds/blues over an otherwise single-hue image. Desaturating it first
+   keeps the grain to pure luminance. */
+.rdr2-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: var(--rdr2-grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Vignette */
+.rdr2-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 42%,
+    var(--rdr2-vignette) 100%
+  );
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+  font-family: var(--primary-font);
+}
+
+#root {
+  max-width: 100vw;
+}
+
+/* Keyboard-only escape hatch past the header nav. Kept in the layout (not
+   `display: none`, which would drop it out of the tab order entirely) and
+   simply pulled off-screen until it takes focus. z-index clears the header's
+   own 1000. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1100;
+  transform: translateY(-150%);
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  font-family: var(--secondary-font);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  transition: transform 0.2s ease;
+}
+
+/* Plain `:focus`, not `:focus-visible`. The link sits off-screen so it can
+   only ever be reached by keyboard, and `:focus-visible` doesn't match when
+   focus arrives programmatically — which would leave it invisible for anyone
+   landing on it via a script-driven focus jump. */
+.skip-link:focus {
+  transform: translateY(0);
+}

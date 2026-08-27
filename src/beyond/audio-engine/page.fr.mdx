@@ -1,0 +1,45 @@
+import { Link } from "react-router-dom";
+
+import cover from "./assets/cover.svg";
+
+export const meta = {
+  slug: "audio-engine",
+  title: "Audio Engine",
+  titlePrefix: "Audio ; Infrastructure",
+  tag: "infrastructure",
+  subtitle:
+    "Rendr transforme déjà un fichier JSON en vidéo, tout seul. Audio Engine se demande si le son peut fonctionner pareil.",
+  description:
+    "Rendr traite la vidéo comme un fichier JSON qui se rend tout seul. Audio Engine applique la même logique au son : mixage, ducking, égalisation, spatialisation, tout déclaré dans la composition plutôt que réglé à la main dans un DAW. L'audio n'a pas cette indépendance des frames par nature, donc son architecture reste encore à inventer.",
+  duration: "Non construit",
+  date: "2026-08-26",
+  stats: [
+    { label: "Statut", value: "Idée, architecture pas encore tranchée" },
+    {
+      label: "Question ouverte",
+      value: "Un seul runtime, ou deux processus qui communiquent en flux",
+    },
+  ],
+  style: {
+    "--project-accent-color": "#ffb454",
+  },
+  cover,
+};
+
+# L'idée
+
+<Lede>
+  <Link to="/project/rendr">Rendr</Link> transforme un fichier JSON en vidéo
+  sans que personne ne touche à une timeline. Audio Engine pose la même
+  question côté son : mixage, ducking, égalisation, spatialisation, tout ça
+  peut-il vivre dans la composition, au lieu d'être réglé à la main dans un
+  DAW ?
+</Lede>
+
+Autant le dire clairement plutôt que de le cacher. <Link to="/project/rendr">Rendr</Link> est rapide parce que ses frames ne dépendent pas les unes des autres. On demande la frame 400, on obtient la frame 400, pas besoin de la 399 avant. L'audio ne joue pas ce jeu-là. Un compresseur a besoin d'anticiper ce qui arrive. La traîne d'une réverbération déborde sur les échantillons suivants. Rien de ce qui rend un traitement audio réellement professionnel n'est indépendant par nature.
+
+Cette idée ne peut donc pas juste être « ajouter un moteur audio ». Une vraie question reste sans réponse. Est-ce que l'audio doit vivre dans le même runtime navigateur que le moteur vidéo, en gardant cette philosophie d'un seul code partout sur laquelle Rendr a été construit ? Ou est-ce qu'un vrai traitement audio impose de sortir de cette règle, avec un sous-processus dédié qui renvoie son résultat au navigateur en flux, pour l'édition ?
+
+Les deux options tiennent la route. Aucune n'est gratuite. Garder le moteur d'un seul bloc, c'est se limiter à ce que permet l'API Web Audio. Le scinder en deux, c'est obtenir de vrais outils audio, le genre de traitement pour lequel un navigateur n'a jamais été pensé. Mais le moteur cesse alors d'être un seul runtime pour en devenir deux, qui se parlent à travers un flux.
+
+Voilà où la réflexion s'arrête, pour l'instant.

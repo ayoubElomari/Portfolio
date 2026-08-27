@@ -1,0 +1,178 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Render farm figure, section 6. Second hand-authored visual on this page.
+
+   Inherits the kit set by FrameIndependence.scss: ink on the page rather than
+   a panel, one accent marking only the caption's subject, type held at a
+   fixed size instead of scaling with the figure.
+
+   Two things learned building this one, worth keeping:
+
+   - A row of identical rounded rectangles is not a diagram. The first pass
+     drew the composition, the machines and the orchestrator as the same
+     shape, and it read as a wireframe. Now the composition is a comb (the
+     same one the frame independence figure uses, so it is recognisable
+     rather than new) and only a machine is a chip. Different kind of thing,
+     different mark.
+   - Borders are 1px or 2px and never 1.5px. CSS rounds a 1.5px border down to
+     1px at a device pixel ratio of 1 while SVG renders it exactly, so this
+     figure and the SVG one would disagree on hairline weight on exactly the
+     displays least able to hide it. 2px marks the accent only.
+
+   Every column is sized by `flex-grow: <frame count>` from the component, so
+   a range's width on screen is its true share of the composition. Column
+   heights are fixed and the stems absorb the difference, which bottom-aligns
+   the machine chips without any alignment rule of their own.
+   ───────────────────────────────────────────────────────────────────────── */
+
+$comb-h: 20px;
+$comb-pitch: 9px;
+$row-h: 132px;
+$drop-h: 20px;
+$bar-h: 32px;
+
+.rendr-rf {
+  margin: 6px 0 2px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 420ms ease, transform 420ms ease;
+
+  &.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.rendr-rf-micro {
+  margin: 0 0 10px;
+  font-family: var(--code-font);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--pp-faint);
+}
+
+.rendr-rf-cols {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  height: $row-h;
+}
+
+.rendr-rf-col {
+  display: flex;
+  flex-direction: column;
+  /* `flex-basis: 0` so `flex-grow` alone decides the width: a column is its
+     share of the composition's frames, not its content's natural size. */
+  flex-basis: 0;
+  min-width: 0;
+}
+
+/* ── The composition, as frames ────────────────────────────────────────────
+   A run of ticks rather than a box, matching the comb in the frame
+   independence figure so this reads as the same composition seen again. The
+   gaps between runs are the cuts, so the split needs no separate mark. */
+.rendr-rf-comb {
+  height: $comb-h;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--pp-whisper) 0 1px,
+    transparent 1px $comb-pitch
+  );
+
+  .is-heavy & {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--pp-accent) 0 2px,
+      transparent 2px $comb-pitch
+    );
+  }
+}
+
+/* The frame a range begins at, sitting at that range's left edge so it reads
+   as a position on the timeline rather than as a name for a box. */
+.rendr-rf-mark {
+  height: 20px;
+  margin: 4px 0 0;
+  font-family: var(--code-font);
+  font-size: 11px;
+  line-height: 20px;
+  letter-spacing: 0.08em;
+  color: var(--pp-faint);
+
+  .is-heavy & {
+    color: var(--pp-strong);
+  }
+}
+
+/* ── Connectors ────────────────────────────────────────────────────────── */
+.rendr-rf-stem,
+.rendr-rf-drop {
+  align-self: center;
+  width: 1px;
+  background-color: var(--pp-whisper);
+}
+
+.rendr-rf-stem {
+  /* Absorbs whatever the machine chip does not use, which is what bottom
+     aligns chips of different heights across the row. */
+  flex: 1;
+
+  .is-heavy & {
+    width: 2px;
+    background-color: var(--pp-accent);
+  }
+}
+
+.rendr-rf-drop {
+  height: $drop-h;
+}
+
+/* ── The machines ──────────────────────────────────────────────────────── */
+.rendr-rf-machine {
+  height: 22px;
+  border: 1px solid var(--pp-rule);
+  border-radius: var(--pp-radius-sm);
+  background-color: var(--pp-surface-raised);
+
+  /* Capability is height as well as accent, so the encoding holds up under a
+     project accent override and for a reader who cannot tell the hues apart.
+     The caption's "bigger machine" is what names this. */
+  .is-heavy & {
+    height: 44px;
+    border-width: 2px;
+    border-color: var(--pp-accent);
+    background-color: var(--pp-accent-faint);
+  }
+}
+
+/* ── Where it all lands ────────────────────────────────────────────────── */
+.rendr-rf-orchestrator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: $bar-h;
+  border: 1px solid var(--pp-rule);
+  border-radius: var(--pp-radius-sm);
+  background-color: var(--pp-surface-raised);
+  font-family: var(--code-font);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--pp-muted);
+}
+
+.rendr-rf-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

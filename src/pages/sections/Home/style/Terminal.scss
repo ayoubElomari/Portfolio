@@ -1,0 +1,308 @@
+.terminal-section {
+  /* Local scale tokens — everything below sizes off these, so the widget
+     shrinks as one piece instead of needing a breakpoint per element. */
+  --tw-font: clamp(12.5px, 2.1vw, 15px);
+  --tw-pad-x: clamp(18px, 3.6vw, 30px);
+  --tw-pad-y: clamp(20px, 3.2vw, 26px);
+  --tw-indent: 1.35em;
+  --tw-hint-font: 12px;
+  --tw-chip-font: 13px;
+  --tw-chip-pad: 8px 16px;
+  --tw-titlebar-font: 12px;
+  /* Below ~1300px this resolves to the 780px floor, so narrow and mid-size
+     screens keep the proportions they already had; past that the window
+     keeps growing with the viewport instead of sitting as a small island in
+     the middle of a wide page. */
+  --tw-max: clamp(780px, 60vw, 1300px);
+
+  width: 100%;
+  padding: 0 48px;
+  display: flex;
+  justify-content: center;
+
+  .terminal-window {
+    position: relative;
+    width: 100%;
+    max-width: var(--tw-max);
+    border: 1px solid var(--border-color);
+    /* Kept low on purpose: every other panel on the page (hero quadrants,
+       project cards, the inspiration grid) is a hard-edged 1px-bordered box,
+       so a heavily rounded window reads as imported from somewhere else. */
+    border-radius: 4px;
+    background: linear-gradient(180deg, #0d0d0d 0%, var(--code-bg) 46%);
+    box-shadow:
+      0 30px 70px -32px rgba(0, 0, 0, 0.9),
+      0 1px 0 rgba(250, 234, 218, 0.05) inset;
+    overflow: hidden;
+  }
+
+  .terminal-titlebar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(250, 234, 218, 0.015);
+
+    .terminal-dots {
+      display: flex;
+      gap: 7px;
+
+      span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--border-color);
+
+        &:nth-child(1) {
+          background-color: var(--accent-color);
+        }
+        &:nth-child(2) {
+          background-color: var(--secondary-accent-color);
+        }
+      }
+    }
+
+    .terminal-titlebar-label {
+      min-width: 0;
+      font-family: var(--code-font);
+      font-size: var(--tw-titlebar-font);
+      color: var(--third-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .terminal-body {
+    padding: var(--tw-pad-y) var(--tw-pad-x);
+    font-family: var(--code-font);
+    font-size: var(--tw-font);
+    line-height: 1.75;
+  }
+
+  .terminal-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    min-height: 1.75em;
+
+    &.is-command {
+      color: var(--primary-color);
+    }
+    &.is-output {
+      color: var(--third-color);
+      padding-left: var(--tw-indent);
+    }
+  }
+
+  .terminal-text {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .terminal-caret {
+    flex-shrink: 0;
+    color: var(--accent-color);
+    user-select: none;
+  }
+
+  .terminal-cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.05em;
+    margin-left: 2px;
+    vertical-align: -0.15em;
+    background-color: var(--accent-color);
+    animation: terminal-blink 1.05s steps(1, end) infinite;
+  }
+
+  .terminal-answer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-color);
+    font-size: var(--tw-font);
+
+    .terminal-line.is-output {
+      color: var(--code-color);
+    }
+
+    .terminal-line.is-thinking {
+      padding-left: var(--tw-indent);
+      color: var(--third-color);
+      font-style: italic;
+
+      /* Cycles "Thinking" → "Thinking..." while the answer is being drawn. */
+      .terminal-text::after {
+        content: "";
+        animation: terminal-thinking 1.2s steps(1, end) infinite;
+      }
+    }
+  }
+
+  .terminal-prompts {
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.45s var(--easing),
+      transform 0.45s var(--easing);
+    pointer-events: none;
+
+    &.is-visible {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+  }
+
+  .terminal-hint {
+    display: block;
+    font-family: var(--secondary-font);
+    font-size: var(--tw-hint-font);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--third-color);
+    margin-bottom: 12px;
+  }
+
+  .terminal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .terminal-chip {
+    border: 1px solid var(--border-color);
+    outline: none;
+    background-color: transparent;
+    color: var(--third-color);
+    font-family: var(--secondary-font);
+    font-size: var(--tw-chip-font);
+    padding: var(--tw-chip-pad);
+    border-radius: 50px;
+    cursor: pointer;
+    transition:
+      color 0.25s,
+      border-color 0.25s,
+      background-color 0.25s;
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+    &.is-active {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      background-color: rgba(250, 78, 38, 0.09);
+    }
+  }
+
+  @media screen and (max-width: 1199px) {
+    padding: 0 24px;
+  }
+
+  @media screen and (max-width: 599px) {
+    padding: 0 16px;
+
+    .terminal-window {
+      border-radius: 3px;
+    }
+    .terminal-titlebar {
+      padding: 9px 12px;
+
+      .terminal-dots span {
+        width: 8px;
+        height: 8px;
+      }
+      .terminal-titlebar-label {
+        font-size: 11px;
+      }
+    }
+    .terminal-chips {
+      gap: 8px;
+    }
+    .terminal-chip {
+      padding: 7px 12px;
+    }
+  }
+
+  /* Past the point where --tw-max starts growing, scale the contents with it
+     — otherwise the window gets wider while the type stays 15px and the whole
+     thing reads as an under-filled box. */
+  @media screen and (min-width: 1300px) {
+    padding: 0 64px;
+
+    --tw-font: clamp(15px, 1.05vw, 19px);
+    --tw-pad-x: clamp(30px, 2.4vw, 46px);
+    --tw-pad-y: clamp(26px, 2vw, 38px);
+    --tw-hint-font: 13px;
+    --tw-chip-font: 14px;
+    --tw-chip-pad: 10px 20px;
+    --tw-titlebar-font: 13px;
+
+    .terminal-window {
+      border-radius: 5px;
+    }
+    .terminal-titlebar {
+      padding: 14px 20px;
+
+      .terminal-dots span {
+        width: 11px;
+        height: 11px;
+      }
+    }
+    .terminal-chips {
+      gap: 12px;
+    }
+    .terminal-prompts {
+      margin-top: 26px;
+    }
+    .terminal-answer {
+      margin-top: 20px;
+      padding-top: 20px;
+    }
+  }
+}
+
+@keyframes terminal-thinking {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+}
+
+@keyframes terminal-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-section {
+    .terminal-prompts {
+      transition: none;
+    }
+    .terminal-cursor {
+      animation: none;
+    }
+  }
+}

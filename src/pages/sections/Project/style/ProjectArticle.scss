@@ -1,0 +1,466 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Article shell: the sticky contents index + the reading canvas it sits
+   beside. The article's own three-track grid (reading column · gap · margin
+   channel) lives in `article.scss`; this file owns the frame around it.
+   ───────────────────────────────────────────────────────────────────────── */
+.project-article-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(96px, 14vh, 172px);
+  padding-top: clamp(76px, 11vh, 136px);
+  padding-bottom: clamp(80px, 12vh, 142px);
+
+  .article-container {
+    width: 100%;
+    max-width: var(--pp-max);
+    padding: 0 var(--pp-gutter);
+    display: grid;
+    grid-template-columns: var(--pp-rail) minmax(0, 1fr);
+    column-gap: var(--pp-col-gap);
+    align-items: start;
+  }
+
+  /* ── Contents index ─────────────────────────────────────────────────── */
+  .article-toc {
+    position: sticky;
+    top: var(--pp-header-offset);
+    min-width: 0;
+    /* The rail must stay reachable no matter what the article renders beside
+       it. `--pp-bleed-left` already stops full-bleed beats short of this
+       column, so nothing should reach here — this is the backstop for a
+       project's own bespoke wide component that doesn't know about the rail. */
+    z-index: 5;
+
+    /* A sticky element clips at the viewport edge with no way to reach
+       whatever's cut off — it isn't a scroll container itself, so a list
+       taller than the remaining screen space (a project with many sections,
+       or just a short window) would silently bury its own bottom half.
+       Capping the rail's height and scrolling `.toc-track` internally (below)
+       keeps every entry reachable regardless of list length or viewport. */
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - var(--pp-header-offset) - 40px);
+
+    /* Mobile-only disclosure trigger */
+    .toc-toggle {
+      display: none;
+    }
+
+    .toc-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--pp-rule);
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .toc-heading {
+      color: var(--pp-faint);
+    }
+
+    .toc-percent {
+      font-variant-numeric: tabular-nums;
+      color: var(--pp-accent);
+    }
+
+    /* `.toc-head` above sits at its own natural height; this is the flexible
+       remainder, and the one part of the rail that actually scrolls. */
+    .toc-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    /* The fixed frame holding the rail line + its accent progress fill. This
+       element never scrolls and is never masked, so the rail stays whole and
+       full-height no matter how far the list beside it is scrolled. */
+    .toc-track {
+      position: relative;
+      padding-left: 18px;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 2px auto 2px 0;
+        width: 1px;
+        background-color: var(--pp-rule);
+      }
+    }
+
+    /* The only thing that scrolls. Kept separate from `.toc-track` so the
+       fade mask below clips the entries alone and leaves the rail intact. */
+    .toc-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Scroll-state classes toggled in ProjectArticle.jsx — only the edge
+         with more list beyond it fades, so a list short enough to fit never
+         fades content that's already fully in view. */
+      &.can-scroll-up {
+        -webkit-mask-image: linear-gradient(to bottom, transparent, black 28px);
+        mask-image: linear-gradient(to bottom, transparent, black 28px);
+      }
+      &.can-scroll-down {
+        -webkit-mask-image: linear-gradient(to top, transparent, black 28px);
+        mask-image: linear-gradient(to top, transparent, black 28px);
+      }
+      &.can-scroll-up.can-scroll-down {
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 28px,
+          black calc(100% - 28px),
+          transparent
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 28px,
+          black calc(100% - 28px),
+          transparent
+        );
+      }
+    }
+
+    .toc-progress {
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      left: 0;
+      width: 1px;
+      background-color: var(--pp-accent);
+      transform-origin: top center;
+      transform: scaleY(0);
+      transition: transform 0.25s linear;
+    }
+
+    .toc-list,
+    .toc-sublist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toc-list {
+      gap: 4px;
+    }
+
+    .toc-sublist {
+      gap: 2px;
+      margin: 4px 0 6px 0;
+    }
+
+    .toc-item {
+      position: relative;
+
+      .toc-link {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 4px 0;
+        font-family: var(--article-font);
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.4;
+        color: var(--pp-muted);
+        text-decoration: none;
+        transition: color 0.22s ease;
+
+        .toc-index {
+          flex-shrink: 0;
+          font-family: var(--secondary-font);
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.1em;
+          font-variant-numeric: tabular-nums;
+          color: var(--pp-faint);
+          transition: color 0.22s ease;
+        }
+
+        .toc-label {
+          min-width: 0;
+          overflow-wrap: anywhere;
+        }
+
+        &:hover {
+          color: var(--pp-strong);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--pp-accent);
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
+      }
+
+      &.toc-child .toc-link {
+        padding-left: 20px;
+        font-size: 14px;
+        color: var(--pp-faint);
+
+        &:hover {
+          color: var(--pp-body);
+        }
+      }
+
+      /* Active marker rides the rail */
+      &.is-active > .toc-link {
+        color: var(--pp-strong);
+        font-weight: 500;
+
+        .toc-index {
+          color: var(--pp-accent);
+        }
+
+        &::before {
+          content: "";
+          position: absolute;
+          left: -18px;
+          top: 6px;
+          width: 3px;
+          height: 14px;
+          background-color: var(--pp-accent);
+        }
+      }
+
+      &.has-active-child > .toc-link {
+        color: var(--pp-body);
+
+        .toc-index {
+          color: var(--pp-accent);
+        }
+      }
+    }
+  }
+
+  /* ── Responsive ─────────────────────────────────────────────────────── */
+  @media screen and (max-width: 1199px) {
+    gap: clamp(64px, 10vh, 110px);
+    padding-top: clamp(48px, 8vh, 80px);
+
+    .article-container {
+      /* The rail is gone; hold the reading canvas to a balanced width so the
+         margin channel stays a channel rather than a void. */
+      max-width: 1020px;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 28px;
+    }
+
+    .article-toc {
+      /* Clears the fixed site header so the bar never hides under it. Rises
+         to `--pp-toc-dock-raised` when the header retracts — see the
+         `header.hidden` rule at the foot of this file. This transition is the
+         "coming back down" half: it mirrors the header's own show timing
+         (0.2s, no delay) so the two arrive together. */
+      top: var(--pp-toc-dock);
+      transition: top 0.2s var(--easing);
+      z-index: 5;
+      /* Sized against the docked (resting) top rather than the raised one:
+         that's the more common state, and it errs toward under- rather than
+         over-using the room the raised state actually has, which just leaves
+         a little unused space instead of overflowing. */
+      max-height: calc(100vh - var(--pp-toc-dock) - 16px);
+      /* Translucent chrome: article scrolls under the contents bar */
+      background-color: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(18px) saturate(150%);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+      border: 1px solid var(--pp-rule);
+      border-radius: var(--pp-radius);
+      overflow: hidden;
+
+      .toc-toggle {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 14px 16px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        color: inherit;
+
+        .toc-toggle-label {
+          font-family: var(--secondary-font);
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--pp-faint);
+        }
+
+        .toc-toggle-current {
+          font-family: var(--article-font);
+          font-size: 14px;
+          color: var(--pp-strong);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .toc-toggle-chevron {
+          width: 8px;
+          height: 8px;
+          border-right: 1.5px solid var(--pp-muted);
+          border-bottom: 1.5px solid var(--pp-muted);
+          transform: rotate(45deg) translate(-2px, -2px);
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        &:active {
+          background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Inset so the ring can't be clipped by the bar's own overflow */
+        &:focus-visible {
+          outline: 2px solid var(--pp-accent);
+          outline-offset: -3px;
+          border-radius: var(--pp-radius);
+        }
+      }
+
+      /* Comfortable thumb targets once the rail becomes a touch sheet */
+      .toc-item .toc-link {
+        padding: 9px 0;
+      }
+      .toc-item.is-active > .toc-link::before {
+        top: 11px;
+      }
+
+      .toc-panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        /* Lets the sheet be bounded by the bar's own max-height, so the list
+           inside gets a finite height to scroll within instead of running on
+           past the bottom of the screen. */
+        min-height: 0;
+
+        /* The collapse animation needs its row clipped, but this must not
+           reach `.toc-scroll` — it is the scroller, and `overflow: hidden`
+           here is exactly what silently made the sheet unscrollable before
+           (same specificity as the base rule, but later in the file). Only
+           the direct row child is clipped; the scroller is nested inside it. */
+        > * {
+          overflow: hidden;
+          min-height: 0;
+        }
+      }
+
+      .toc-head {
+        display: none;
+      }
+
+      /* Padding lives on the list, not the track: a padded grid item can't
+         collapse to zero height when the disclosure closes. */
+      .toc-track {
+        padding: 0 0 0 34px;
+
+        &::before {
+          inset: 6px auto 18px 0;
+        }
+
+        .toc-list {
+          padding: 4px 16px 16px 0;
+        }
+      }
+
+      /* Touch scrolling for the sheet's list. `overscroll-behavior` from the
+         base rule keeps a flick at either end from chaining out to the page. */
+      .toc-scroll {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      &.is-open {
+        .toc-toggle-chevron {
+          transform: rotate(225deg) translate(-2px, -2px);
+        }
+        .toc-panel {
+          grid-template-rows: 1fr;
+        }
+      }
+
+      /* Navigating from the sheet collapses it instantly — animating the
+         collapse while a smooth scroll is in flight moves the target out
+         from under the scroll and overshoots the section. */
+      &.is-snapping .toc-panel {
+        transition: none;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-toc .toc-panel,
+    .article-toc .toc-progress,
+    .article-toc .toc-toggle-chevron {
+      transition-duration: 0.01ms;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .article-toc {
+      background-color: var(--bg-color);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Contents bar follows the retracting header (mobile only).
+
+   When the site header slides away on scroll-down, the sticky contents bar
+   moves up into the space it vacated, and drops back when the header
+   returns. `header` is a preceding sibling of `main` in `App.jsx` and the
+   page root lives inside it, so the header's hidden state is readable in pure
+   CSS — no state lifting, no JS wiring, and it covers project pages and
+   beyond entries alike since both page roots carry `.project-page`.
+
+   The `main` step is load-bearing: it was added when the app gained a `<main>`
+   landmark, and dropping it silently breaks the docking on mobile only.
+
+   Animating `top` rather than `transform` is deliberate. On a sticky element
+   `top` only takes effect once the bar is actually docked, so the bar stays
+   put while it's still flowing inside the article. A transform would apply
+   in both states and float the bar 82px out of place over the hero on the
+   way down, before it ever docks.
+   ───────────────────────────────────────────────────────────────────────── */
+@media screen and (max-width: 1199px) {
+  header.hidden ~ main .project-page .article-toc {
+    top: var(--pp-toc-dock-raised);
+    /* Mirrors the header's hide timing (0.3s behind a 0.2s delay) so the bar
+       waits for the header to start moving instead of racing it up. */
+    transition: top 0.3s var(--easing) 0.2s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-article-section .article-toc,
+    header.hidden ~ main .project-page .article-toc {
+      transition-duration: 0.01ms;
+      transition-delay: 0s;
+    }
+  }
+}

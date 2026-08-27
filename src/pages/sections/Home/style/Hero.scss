@@ -1,0 +1,256 @@
+section.hero-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 0;
+  width: 100%;
+  height: 100vh;
+
+  .hero-part {
+    padding: 50px 52px;
+    position: relative;
+    overflow: hidden;
+
+    &.top {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    &.left {
+      border-right: 1px solid var(--border-color);
+    }
+    &.bottom,
+    &.top {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .part-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hero-description {
+      font-size: 22px;
+      font-weight: 400;
+      line-height: 1.25;
+    }
+
+    /* Full Name */
+    &.top.left {
+      background-color: var(--bg-color);
+
+      .hero-kicker {
+        font-family: var(--code-font);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent-color);
+      }
+
+      .hero-lede {
+        font-family: var(--article-font);
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--third-color);
+        max-width: 44ch;
+      }
+
+      .sidebyside-container {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+
+        h1 {
+          font-size: 80px;
+          font-weight: 500;
+          letter-spacing: -0.02em;
+          line-height: 100%;
+          flex-shrink: 0;
+
+          display: flex;
+          align-items: center;
+        }
+        .accent-icon {
+          width: 88px;
+          transform: scaleX(-1);
+          flex-shrink: 0;
+
+          svg {
+            width: 100%;
+            height: 100%;
+
+            * {
+              fill: var(--secondary-accent-color);
+            }
+          }
+        }
+      }
+    }
+
+    &.top.right {
+      .hero-bio {
+        font-family: var(--article-font);
+        font-size: 15px;
+        line-height: 1.65;
+        color: var(--third-color);
+        max-width: 50ch;
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 4px;
+
+        .hero-meta-row {
+          display: flex;
+          align-items: baseline;
+          gap: 14px;
+          padding-top: 8px;
+          border-top: 1px solid var(--border-color);
+        }
+        dt {
+          flex-shrink: 0;
+          min-width: 76px;
+          font-family: var(--code-font);
+          font-size: 11px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--third-color);
+        }
+        dd {
+          font-family: var(--secondary-font);
+          font-size: 14px;
+          color: var(--primary-color);
+        }
+      }
+    }
+
+    &.bottom.left {
+      display: flex;
+
+      .part-content {
+        height: 100%;
+        width: 100%;
+      }
+
+      .hero-blurb {
+        font-family: var(--article-font);
+        font-size: 15px;
+        line-height: 1.65;
+        color: var(--third-color);
+        max-width: 50ch;
+      }
+
+      /* Tells the reader the photos are interactive — the reveal is worth
+         nothing if nobody knows to click. */
+      /* Pinned to the bottom of the quadrant, under the copy. */
+      .hero-hint {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 24px;
+        font-family: var(--code-font);
+        font-size: 12px;
+        color: var(--third-color);
+
+        &::before {
+          content: "";
+          width: 22px;
+          height: 1px;
+          background-color: var(--accent-color);
+        }
+      }
+    }
+
+    /* Image Gallery */
+    &.bottom.right {
+      padding: 20px;
+
+      .part-content {
+        height: 100%;
+
+        .image-grid {
+          height: 100%;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          grid-template-rows: repeat(2, 1fr);
+          gap: 16px;
+        }
+      }
+    }
+  }
+  #hero-center-plus {
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+
+    img {
+      width: 54px;
+      height: 54px;
+      margin-top: 1px;
+      margin-right: 1px;
+    }
+  }
+
+  @media screen and (max-width: 1199px) {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+
+    .hero-part {
+      .hero-description {
+        font-size: 19px;
+      }
+
+      &.bottom {
+        display: none;
+      }
+      /* `&.bottom.left` above is a 3-class selector (higher specificity than
+         the 2-class `&.bottom` rule just above it), because the base styles
+         set `display: flex` on it directly to pin the hint to the bottom of
+         the quadrant. Without this explicit override, that flex rule keeps
+         winning on specificity regardless of media-query source order, and
+         the hint (plus the rest of the bottom-left copy) stays visible on
+         mobile despite the intended hide. */
+      &.bottom.left {
+        display: none;
+      }
+      &.top {
+        &.left {
+          border: none;
+          padding: 108px 24px 0px;
+
+          .hero-lede {
+            font-size: 15px;
+          }
+
+          .sidebyside-container {
+            justify-content: space-between;
+
+            h1 {
+              font-size: 55px;
+            }
+            .accent-icon {
+              width: 71px;
+            }
+          }
+        }
+        &.right {
+          border-bottom: 1px solid var(--border-color);
+        }
+      }
+    }
+    #hero-center-plus {
+      display: none;
+    }
+  }
+}

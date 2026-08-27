@@ -1,0 +1,305 @@
+header {
+  background-color: var(--bg-color);
+  width: 100%;
+  position: fixed;
+  z-index: 1000;
+  transition: 0.2s;
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px 72px;
+    width: 100%;
+    background-color: var(--bg-color);
+    transition: transform 0.1s;
+
+    .logo-name {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    .navigation {
+      display: flex;
+      gap: 32px;
+
+      a {
+        text-decoration: none;
+        text-transform: uppercase;
+        color: var(--secondary-color);
+        font-size: 16px;
+        font-weight: 400;
+        letter-spacing: 0.14em;
+        position: relative;
+
+        &::after {
+          content: "";
+          display: block;
+          width: 0;
+          height: 1px;
+          background-color: var(--secondary-color);
+          margin-top: -4px;
+          transition: width 0.3s var(--easing);
+        }
+
+        &:hover::after {
+          width: 100%;
+        }
+      }
+
+      .lang-switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .lang-option {
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          font-family: inherit;
+          text-transform: uppercase;
+          color: var(--secondary-color);
+          font-size: 16px;
+          font-weight: 400;
+          letter-spacing: 0.14em;
+          opacity: 0.55;
+          transition:
+            opacity 0.3s var(--easing),
+            color 0.3s var(--easing);
+
+          &:hover {
+            opacity: 1;
+          }
+
+          &.active {
+            color: var(--accent-color);
+            opacity: 1;
+          }
+        }
+
+        /* Hairline separator between locales, so "EN FR" doesn't read as one word. */
+        .lang-option + .lang-option {
+          position: relative;
+          padding-left: 9px;
+
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 12px;
+            background-color: var(--border-color);
+          }
+        }
+      }
+    }
+  }
+
+  /* It's a <button> for keyboard access; strip the UA chrome so it looks
+     exactly like the plain icon it replaced. */
+  .mobile-nav-icon {
+    display: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+  }
+  .mobile-nav-background {
+    display: none;
+  }
+
+  &.hidden {
+    transform: translateY(-100%);
+    pointer-events: none;
+    transition: 0.3s 0.2s;
+
+    .header-container {
+      transform-origin: left center;
+      transform: translateY(-100%);
+      opacity: 0;
+      transition:
+        transform 0.3s var(--easing),
+        opacity 0.3s var(--easing);
+    }
+  }
+
+  @media screen and (max-width: 1199px) {
+    border-bottom: 1px solid var(--border-color);
+    .header-container {
+      padding: 24px;
+      position: relative;
+
+      .logo-name {
+        font-size: 24px;
+
+        &:hover {
+          text-decoration: none;
+        }
+      }
+
+      .mobile-nav-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        overflow: hidden;
+
+        svg {
+          width: 100%;
+          height: 100%;
+          flex-shrink: 0;
+          transition: transform 0.3s var(--easing);
+
+          * {
+            fill: var(--secondary-color);
+          }
+        }
+
+        &.open {
+          &.left {
+            flex-direction: row-reverse;
+            svg {
+              transform: translateX(100%);
+            }
+          }
+          &.right {
+            flex-direction: row;
+            svg {
+              transform: translateX(-100%);
+            }
+          }
+          &.top {
+            flex-direction: column;
+            svg {
+              transform: translateY(-100%);
+            }
+          }
+          &.bottom {
+            flex-direction: column-reverse;
+            svg {
+              transform: translateY(100%);
+            }
+          }
+        }
+      }
+
+      .navigation {
+        pointer-events: none;
+        position: absolute;
+        bottom: 0px;
+        left: 0;
+        width: 100%;
+        background-color: var(--bg-color);
+        border-top: 1px solid var(--border-color);
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+        padding: 24px;
+
+        transform-origin: top center;
+        transform: translateY(100%) scaleY(0);
+        transition: transform 0.3s var(--easing) 0.3s;
+
+        * {
+          opacity: 0;
+          transform: translateY(-100%);
+          transition:
+            opacity 0.3s var(--easing),
+            transform 0.3s var(--easing);
+        }
+
+        &.mobile-open {
+          pointer-events: all;
+          transform: translateY(100%) scaleY(1);
+          transition: transform 0.2s;
+
+          a {
+            transform: translateY(0%);
+            opacity: 1;
+            transition:
+              transform 0.2s,
+              opacity 0.2s;
+
+            &:nth-child(1) {
+              transition-delay: 0.2s, 0.2s;
+            }
+
+            &:nth-child(2) {
+              transition-delay: 0.28s, 0.28s;
+            }
+
+            &:nth-child(3) {
+              transition-delay: 0.36s, 0.36s;
+            }
+            &:nth-child(4) {
+              transition-delay: 0.44s, 0.44s;
+            }
+
+            &:hover::after {
+              width: 0%;
+            }
+          }
+
+          /* The wildcard above hides every child; only `a` is revealed by the
+             rule above it, so the switcher needs its own reveal step. */
+          .lang-switch {
+            transform: translateY(0%);
+            opacity: 1;
+            transition:
+              transform 0.2s 0.52s,
+              opacity 0.2s 0.52s;
+          }
+        }
+
+        .lang-switch {
+          gap: 12px;
+
+          .lang-option {
+            /* The wildcard hides children; the buttons are grandchildren and
+               animate with their parent, so neutralise the inherited offset. */
+            opacity: 0.55;
+            transform: none;
+
+            &.active {
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      .mobile-nav-background {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: var(--bg-color);
+        z-index: -1;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+        transition-delay: 0.6s;
+
+        &.mobile-open {
+          opacity: 0.6;
+          pointer-events: all;
+          transition-delay: 0s;
+        }
+      }
+    }
+  }
+}

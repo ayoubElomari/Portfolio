@@ -1,0 +1,112 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Shared vocabulary for the hand-authored figures in this folder.
+
+   Extracted at the fourth figure, not the first: the guidelines
+   (../../.copy/visual-guidelines.md) say to freeze the constants early but
+   abstract the code late, once the repetition is real rather than predicted.
+   Frame independence and the render farm each needed something different
+   enough that a shared component would have fought them. The v1 round trip
+   and the capture path are the same chip and the same arrow, so they share.
+
+   What lives here is the *look*: chip geometry, type, colour, the reveal.
+   Layout stays with each figure, because each one's row is a different width
+   and therefore stands up at a different breakpoint. Sharing a media query
+   between them would put one of the two on the wrong side of it.
+
+   ── The specificity rule every mixin here assumes ─────────────────────────
+   The shared article stylesheet styles bare elements inside the reading
+   column at a specificity a single class cannot beat, and it sits outside
+   this project folder so it cannot be edited:
+
+     article.project-article img                    (0,1,2)  height: auto
+     article.project-article ul, ...ol              (0,1,2)  display: flex;
+                                                             flex-direction: column;
+                                                             padding-left: 24px;
+                                                             gap: 6px
+     article.project-article ol li                  (0,1,3)  padding-left: 4px
+
+   So `@include chip` must always be used from a selector nested at least one
+   class deep, and it writes padding as longhands rather than the shorthand,
+   because a shorthand at (0,2,0) still loses its left edge to a longhand at
+   (0,1,3).
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The figure's one entrance. Under a fifth of a second either side of the
+   kit's 500ms ceiling, opacity and a few pixels only, and nothing that
+   redraws the figure's own logic. Continuous motion is this page's reserved
+   signal for a live engine, so a drawing never gets it. */
+@mixin reveal {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 420ms ease, transform 420ms ease;
+
+  &.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* A named stage. 12/16 padding and an 8px radius, per the kit's geometry. */
+@mixin chip {
+  padding-top: 12px;
+  padding-right: 16px;
+  padding-bottom: 12px;
+  padding-left: 16px;
+  border: 1px solid var(--pp-rule);
+  border-radius: var(--pp-radius-sm);
+  background-color: var(--pp-surface-raised);
+  font-family: var(--code-font);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--pp-body);
+  /* A stage name breaking over two lines would make one chip taller than its
+     neighbours and bend the row. */
+  white-space: nowrap;
+}
+
+/* The figure's single accent. One pixel comes off each side so the heavier
+   border does not make the chip taller than its neighbours. */
+@mixin chip-accent {
+  padding-top: 11px;
+  padding-right: 15px;
+  padding-bottom: 11px;
+  padding-left: 15px;
+  border-width: 2px;
+  border-color: var(--pp-accent);
+  background-color: var(--pp-accent-faint);
+  color: var(--pp-strong);
+}
+
+/* A stage that is being shown as superseded. De-emphasised down the ink
+   scale rather than by dropping opacity: a translucent chip sits on whatever
+   is behind it and goes muddy, while the ink scale stays a clean step back
+   and keeps every edge crisp. */
+@mixin chip-past {
+  border-color: var(--pp-whisper);
+  background-color: transparent;
+  color: var(--pp-muted);
+}
+
+@mixin chevron {
+  display: block;
+  width: 8px;
+  height: 12px;
+}
+
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

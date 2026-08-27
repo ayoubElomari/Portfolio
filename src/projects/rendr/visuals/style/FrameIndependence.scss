@@ -1,0 +1,88 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Frame independence figure. First hand-authored visual on this page — see
+   ../../.copy/visual-guidelines.md for the invariant kit this establishes.
+
+   Three rules it sets for everything later in visuals/:
+
+   1. A figure is ink on the page, not a panel. No border, no fill, no raised
+      surface: that treatment is reserved for the live engine demos
+      (guidelines section 4). In the mdx it goes inside `<Frame plain>`,
+      which keeps the label/caption voice and drops the plate.
+   2. It fills its container's width like an image. No min-width floor, no
+      horizontal scroll, no separate mobile arrangement.
+   3. Geometry in SVG, type in HTML. Rule 2 means an SVG scales its own text
+      down with it, which lands well under the 11px floor on a phone. Holding
+      labels in HTML keeps one type size at every width.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.rendr-fi {
+  /* Bound tighter to the paragraph above than to whatever follows, so it
+     reads as an annotation on that paragraph rather than its own section. */
+  margin: 6px 0 2px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 420ms ease, transform 420ms ease;
+
+  &.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.rendr-fi-micro {
+  margin: 0 0 2px;
+  font-family: var(--code-font);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--pp-faint);
+}
+
+.rendr-fi-comb {
+  display: block;
+  width: 100%;
+  /* Fixed height, free width: `preserveAspectRatio="none"` lets the comb
+     stretch horizontally without the strokes distorting, since every line is
+     `vector-effect: non-scaling-stroke`. */
+  height: 56px;
+}
+
+.rendr-fi-marks {
+  position: relative;
+  height: 18px;
+  margin: 0;
+}
+
+.rendr-fi-frame {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-family: var(--code-font);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--pp-body);
+  white-space: nowrap;
+
+  &.is-accent {
+    color: var(--pp-strong);
+  }
+}
+
+/* The figure's own description for assistive tech. The comb itself is
+   `aria-hidden`, so this carries the meaning instead. */
+.rendr-fi-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

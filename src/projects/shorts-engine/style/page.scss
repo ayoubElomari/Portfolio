@@ -1,0 +1,86 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Local styles for the Shorts Engine case study. Imported by
+   `page.en.mdx` / `page.fr.mdx` directly.
+
+   Scoped under `article.project-article` so it can only ever affect content
+   inside this case study's reading grid, at the same specificity layer as
+   the shared article system it's extending, not fighting it.
+
+   Nothing here defines a colour directly. Every value is a `--pp-*` token,
+   so this file retints with `meta.style`'s accent override like the rest of
+   the page.
+   ───────────────────────────────────────────────────────────────────────── */
+
+article.project-article {
+  /* ── The summary block above section 01 ──────────────────────────────
+     The article opens with an unnumbered "Summary" headline, then six
+     short labelled parts (the idea, what ran, what it proved, what ended
+     it, where it points, the proof) before the numbered deep dive begins.
+
+     The headline gets the same display-type weight as a numbered section
+     title (`h1.section_title`) so it reads as a real opening statement
+     rather than a stray bold word — but it's a `<p>`, not an `h1`: it must
+     never join the section counter or the contents rail. */
+  > p.se-summary-heading {
+    margin-top: 0;
+    font-family: var(--pp-display-font);
+    font-size: clamp(2.15rem, 3.6vw, 3.1rem);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    color: var(--pp-ink);
+    text-wrap: balance;
+  }
+
+  /* Each labelled part gets the micro-label voice the rest of the system
+     uses for structural marks (`.pp-frame-label`, `.pp-aside-title`):
+     small, tracked, uppercase, with an accent tick. Markdown `**bold**`
+     alone reads as body-weight emphasis, indistinguishable from a bold
+     word mid-sentence. The hairline above turns six parts into six legible
+     bands rather than one undifferentiated wall of prose. */
+  > p.se-summary-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(30px, 4vh, 44px);
+    padding-top: clamp(18px, 2.4vh, 26px);
+    border-top: 1px solid var(--pp-rule);
+
+    font-family: var(--secondary-font);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--pp-muted);
+
+    &::before {
+      content: "";
+      flex-shrink: 0;
+      width: 2px;
+      height: 10px;
+      background-color: var(--pp-accent);
+    }
+  }
+
+  /* Right under the headline, the first label doesn't need its own rule,
+     the headline above it already reads as the section break. */
+  > p.se-summary-heading + p.se-summary-label {
+    margin-top: clamp(20px, 2.6vh, 28px);
+    padding-top: 0;
+    border-top: none;
+  }
+
+  /* ── Glossary callouts ───────────────────────────────────────────────
+     Jargon (the bot¹ footnote) is explained in a `<Callout>` rather than
+     inline, so the prose keeps its pace for a reader who already knows the
+     term. The marker leads the entry, matching the reference in the text
+     above it. */
+  .se-term .ref {
+    /* Sits on the baseline here, not raised: in the definition it's a list
+       marker, not a reference into running text. */
+    margin-right: 7px;
+    vertical-align: baseline;
+    font-size: 0.82em;
+  }
+}

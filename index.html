@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- `media="print"` + `onload` swap keeps these off the critical
+         rendering path without losing the early fetch a plain <link
+         rel="stylesheet"> gives — the `display=swap` in each URL means text
+         stays visible on the system-font fallback until each swap fires.
+         The <noscript> block covers requests with JS disabled. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Akshar:wght@300..700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..600&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Akshar:wght@300..700&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..600&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#000000" />
+
+    <!-- Default title/description. Individual routes override the title (and
+         where useful the description) at runtime via `src/lib/usePageMeta.js`,
+         so these are what a crawler without JS and the initial paint see. -->
+    <title>Ayoub El Omari, Full Stack Developer</title>
+    <meta
+      name="description"
+      content="Portfolio of Ayoub El Omari, a full-stack developer building web interfaces, systems, and the automation connecting them."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ayoub El Omari" />
+    <meta property="og:title" content="Ayoub El Omari, Full Stack Developer" />
+    <meta
+      property="og:description"
+      content="Portfolio of Ayoub El Omari, a full-stack developer building web interfaces, systems, and the automation connecting them."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ayoub El Omari, Full Stack Developer" />
+    <meta
+      name="twitter:description"
+      content="Portfolio of Ayoub El Omari, a full-stack developer building web interfaces, systems, and the automation connecting them."
+    />
+    <!-- TODO (content pass): add `og:url`, `og:image` and a canonical link
+         once the site has a real deployed domain and a share image. Emitting
+         them with a placeholder URL is worse than omitting them — crawlers
+         cache whatever they're given. -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+.app-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: min(380px, calc(100vw - 48px));
+  padding: 16px 18px;
+
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-left: 2px solid var(--accent-color);
+
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition:
+    opacity 0.3s var(--easing),
+    transform 0.3s var(--easing);
+
+  &.visible {
+    pointer-events: all;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .toast-message {
+    font-family: var(--secondary-font);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary-color);
+  }
+
+  .toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--third-color);
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--secondary-color);
+    }
+  }
+
+  @media screen and (max-width: 1199px) {
+    top: 16px;
+    right: 16px;
+  }
+}

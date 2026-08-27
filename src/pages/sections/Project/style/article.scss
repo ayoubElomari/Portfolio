@@ -1,0 +1,1209 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Case-study prose + the shared layout primitives.
+
+   Everything here is generic — it styles whatever a project's `page.mdx`
+   emits, plus the shared MDX building blocks in `src/mdx/mdx-components.jsx`.
+   No project-specific selectors live in this file.
+
+   ── The three-track grid ────────────────────────────────────────────────
+   The article is a grid, not a column:
+
+     ┌─────────────── reading column ───────────────┐ gap ┌── channel ──┐
+     │ prose, code, callouts                        │     │ aside media │
+     └──────────────────────────────────────────────┘     └─────────────┘
+     ├────────────────────── .pp-wide ────────────────────────────────────┤
+     ├───── .pp-full (to the page edge, stopping clear of the rail) ──────┤
+
+   Children default to the reading column. `.pp-wide` and `.pp-full` are the
+   only escape hatches, both derived from the measurement chain in
+   `pages/style/Project.scss`. The channel absorbs whatever slack is left,
+   so the same grid collapses gracefully all the way to a phone.
+   ───────────────────────────────────────────────────────────────────────── */
+article.project-article {
+  display: grid;
+  /* `min(measure, 100%)` — not a bare max — so the reading column shrinks
+     with the viewport instead of overflowing it once the channel hits zero. */
+  grid-template-columns:
+    [text-start] minmax(0, min(var(--pp-measure), 100%))
+    [text-end] var(--pp-aside-gap)
+    [chan-start] minmax(0, 1fr) [chan-end];
+  align-content: start;
+  counter-reset: pp-section;
+
+  font-family: var(--article-font);
+  font-size: 1.1875rem;
+  font-weight: 300;
+  line-height: 1.75;
+  letter-spacing: -0.005em;
+  color: var(--pp-body);
+
+  > * {
+    grid-column: text-start / text-end;
+    min-width: 0;
+  }
+
+  /* A project's own component dropped straight into the MDX gets the wide
+     track. Bespoke widgets are visual moments — a demo, a canvas, a card row
+     — and the reading measure crushes them. Wrap one in <Frame> or a
+     <Container> to deliberately hold it to the column instead. */
+  > :is(div, section):not(.spacer, .container, .pp-lede, .pp-wide, .pp-full) {
+    grid-column: text-start / chan-end;
+  }
+
+  > .pp-wide {
+    grid-column: text-start / chan-end;
+  }
+
+  > .pp-full {
+    grid-column: text-start / chan-end;
+    margin-left: calc(-1 * var(--pp-bleed-left));
+    margin-right: calc(-1 * var(--pp-bleed-right));
+  }
+
+  /* ═══ Headings ══════════════════════════════════════════════════════ */
+  h1.section_title {
+    position: relative;
+    grid-column: text-start / chan-end;
+    counter-increment: pp-section;
+    scroll-margin-top: var(--pp-header-offset);
+    font-family: var(--pp-display-font);
+    font-size: clamp(2.15rem, 3.6vw, 3.1rem);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    color: var(--pp-ink);
+    text-wrap: balance;
+
+    /* Section number — the recurring accent mark of the article system */
+    &::before {
+      content: counter(pp-section, decimal-leading-zero);
+      display: block;
+      margin-bottom: 14px;
+      font-family: var(--secondary-font);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      font-variant-numeric: tabular-nums;
+      color: var(--pp-accent);
+    }
+
+    &:not(:first-child) {
+      padding-top: clamp(44px, 6vh, 76px);
+      border-top: 1px solid var(--pp-rule);
+      /* An accent segment laid over the left end of the section rule — the
+         same mark as the hero's spec ticks, at section scale. */
+      background-image: linear-gradient(var(--pp-accent), var(--pp-accent));
+      background-size: 56px 1px;
+      background-repeat: no-repeat;
+      background-position: left top;
+      background-origin: border-box;
+      background-clip: border-box;
+    }
+  }
+
+  h2.container_title {
+    scroll-margin-top: var(--pp-header-offset);
+    font-family: var(--article-font);
+    /* A clear step above body (19px) so it never reads as a bold paragraph */
+    font-size: clamp(1.3rem, 1.9vw, 1.625rem);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    color: var(--pp-strong);
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 15px;
+      height: 2px;
+      margin-right: 13px;
+      vertical-align: 0.3em;
+      background-color: var(--pp-accent);
+    }
+  }
+
+  /* ═══ Prose ═════════════════════════════════════════════════════════ */
+  p {
+    text-wrap: pretty;
+  }
+
+  strong,
+  b {
+    font-weight: 600;
+    color: var(--pp-strong);
+  }
+
+  em,
+  i {
+    font-style: italic;
+  }
+
+  a:not(.toc-link) {
+    color: var(--pp-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--pp-accent);
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--pp-accent);
+    }
+  }
+
+  ul,
+  ol {
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    li {
+      padding-left: 4px;
+
+      &::marker {
+        color: var(--pp-accent);
+        font-size: 0.85em;
+      }
+    }
+  }
+
+  blockquote:not(.pp-pull) {
+    padding-left: 26px;
+    border-left: 2px solid var(--pp-accent);
+    font-size: 1.25rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--pp-strong);
+  }
+
+  hr {
+    border: none;
+    height: 1px;
+    background-color: var(--pp-rule);
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Bare images dropped straight into MDX still get a plate */
+  > p > img,
+  > img {
+    border-radius: var(--pp-radius);
+    border: 1px solid var(--pp-rule);
+  }
+
+  /* ═══ Shared caption voice ══════════════════════════════════════════ */
+  .pp-caption {
+    display: block;
+    font-family: var(--secondary-font);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.005em;
+    color: var(--pp-muted);
+    text-wrap: pretty;
+  }
+
+  /* ═══ Lede ══════════════════════════════════════════════════════════ */
+  .pp-lede {
+    position: relative;
+    padding-left: 26px;
+    font-size: clamp(1.25rem, 1.7vw, 1.4375rem);
+    font-weight: 300;
+    line-height: 1.55;
+    letter-spacing: -0.015em;
+    color: var(--pp-strong);
+    text-wrap: pretty;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      bottom: 0.35em;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        var(--pp-accent),
+        transparent 92%
+      );
+    }
+
+    > * + * {
+      margin-top: 14px;
+    }
+  }
+
+  /* ═══ Pull statement ════════════════════════════════════════════════ */
+  .pp-pull {
+    position: relative;
+    padding: clamp(26px, 3.6vw, 42px) 0 0;
+    border: none;
+    border-top: 1px solid var(--pp-rule);
+
+    .pp-pull-body {
+      font-family: var(--pp-display-font);
+      /* Deliberately a step *below* the section heading (3.1rem): a pull is an
+         emphasis inside a section, not a competing title. */
+      font-size: clamp(1.625rem, 3vw, 2.375rem);
+      font-weight: 500;
+      font-style: normal;
+      line-height: 1.12;
+      letter-spacing: -0.028em;
+      color: var(--pp-ink);
+      text-wrap: balance;
+
+      > * {
+        margin: 0;
+      }
+      > * + * {
+        margin-top: 0.4em;
+      }
+    }
+
+    .pp-pull-cite {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      font-style: normal;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--pp-faint);
+
+      &::before {
+        content: "";
+        width: 22px;
+        height: 1px;
+        flex-shrink: 0;
+        background-color: var(--pp-accent);
+      }
+    }
+  }
+
+  /* ═══ Frame — the general-purpose media plate ═══════════════════════ */
+  .pp-frame {
+    position: relative;
+
+    .pp-frame-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--pp-faint);
+
+      &::before {
+        content: "";
+        width: 2px;
+        height: 9px;
+        background-color: var(--pp-accent);
+      }
+    }
+
+    .pp-frame-body {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(16px, 2.4vw, 28px);
+      border: 1px solid var(--pp-rule);
+      border-radius: var(--pp-radius);
+      background-color: var(--pp-surface);
+      background-image: radial-gradient(
+        120% 100% at 50% 0%,
+        var(--pp-surface-raised) 0%,
+        transparent 70%
+      );
+
+      > * {
+        max-width: 100%;
+      }
+
+      > img,
+      > svg {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    /* Media touches the frame — for screenshots and full-bleed artwork */
+    &.is-flush .pp-frame-body {
+      padding: 0;
+
+      > img,
+      > svg {
+        display: block;
+      }
+    }
+
+    /* No frame at all: keeps the label/caption voice and the chosen width */
+    &.is-plain .pp-frame-body {
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: none;
+    }
+
+    .pp-caption {
+      margin-top: 12px;
+    }
+
+    /* A frame taken edge to edge stops being a card: square it off and let
+       the plate run into the page gutters. */
+    &.pp-full {
+      .pp-frame-body {
+        border-inline: none;
+        border-radius: 0;
+      }
+
+      .pp-frame-label,
+      .pp-caption {
+        margin-inline: var(--pp-bleed-right);
+      }
+    }
+  }
+
+  /* ═══ Break — the full-width visual beat ════════════════════════════ */
+  .pp-break {
+
+    .pp-break-body {
+      position: relative;
+      overflow: hidden;
+      background-color: var(--pp-surface);
+      border-block: 1px solid var(--pp-rule);
+
+      > img,
+      > svg,
+      > * {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      > img {
+        object-fit: cover;
+      }
+    }
+
+    /* Short of full bleed a break is a card, not a band: only an edge-to-edge
+       beat drops its side borders and corners. */
+    &:not(.pp-full) .pp-break-body {
+      border: 1px solid var(--pp-rule);
+      border-radius: var(--pp-radius);
+    }
+
+    .pp-break-foot {
+      display: flex;
+      align-items: baseline;
+      gap: clamp(16px, 3vw, 40px);
+      margin-top: 14px;
+      padding-inline: var(--pp-bleed-right);
+    }
+
+    &:not(.pp-full) .pp-break-foot {
+      padding-inline: 0;
+    }
+
+    .pp-break-label {
+      flex-shrink: 0;
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--pp-accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pp-caption {
+      max-width: 46rem;
+    }
+  }
+
+  /* ═══ Strip — a row of small related visuals ════════════════════════ */
+  .pp-strip {
+
+    .pp-strip-track {
+      display: grid;
+      grid-template-columns: repeat(var(--pp-strip-cols, 3), minmax(0, 1fr));
+      gap: clamp(12px, 1.6vw, 22px);
+      align-items: start;
+    }
+
+    .pp-strip-item {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .pp-strip-media {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(10px, 1.4vw, 18px);
+      border: 1px solid var(--pp-rule);
+      border-radius: var(--pp-radius-sm);
+      background-color: var(--pp-surface);
+      transition:
+        border-color 0.28s ease,
+        background-color 0.28s ease;
+
+      > img,
+      > svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    .pp-strip-item:hover .pp-strip-media {
+      border-color: var(--pp-accent-hair);
+      background-color: var(--pp-surface-raised);
+    }
+
+    .pp-strip-foot {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-top: 10px;
+    }
+
+    .pp-strip-label {
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--pp-accent);
+    }
+
+    > .pp-caption {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--pp-rule);
+    }
+  }
+
+  /* ═══ Aside — a small visual pinned beside an idea ══════════════════ */
+  .pp-aside {
+    display: grid;
+    /* Mirrors the article's own tracks, so the prose half lines up exactly
+       with the reading column above and below it. */
+    grid-template-columns:
+      minmax(0, min(var(--pp-measure), 100%))
+      var(--pp-aside-gap)
+      minmax(0, 1fr);
+    align-items: start;
+
+    /* Both children are pinned to row 1 explicitly. Without it, `side-left`
+       breaks: the body is written first in the DOM but placed in column 3,
+       which advances grid auto-placement past column 1 — so the media, asking
+       for column 1, can't go backwards and wraps to a second row, leaving a
+       tall hole beside the prose. Naming the row makes placement order
+       irrelevant. */
+    .pp-aside-body {
+      grid-column: 1;
+      grid-row: 1;
+      font-size: 1.0625rem;
+      line-height: 1.7;
+      color: var(--pp-body);
+
+      > * + * {
+        margin-top: 12px;
+      }
+    }
+
+    .pp-aside-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 10px;
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--pp-muted);
+
+      &::before {
+        content: "";
+        width: 2px;
+        height: 9px;
+        flex-shrink: 0;
+        background-color: var(--pp-accent);
+      }
+    }
+
+    .pp-aside-prose > * + * {
+      margin-top: 12px;
+    }
+
+    .pp-aside-media {
+      grid-column: 3;
+      grid-row: 1;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid var(--pp-rule);
+      border-radius: var(--pp-radius-sm);
+      background-color: var(--pp-surface);
+
+      > img,
+      > svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    &.side-left {
+      .pp-aside-body {
+        grid-column: 3;
+      }
+      .pp-aside-media {
+        grid-column: 1;
+      }
+    }
+
+    /* Even split — media carries as much weight as the prose */
+    &.ratio-even {
+      grid-template-columns: minmax(0, 1fr) clamp(20px, 3vw, 40px) minmax(0, 1fr);
+    }
+
+    /* An aside held to the reading column has no margin channel to borrow,
+       so it falls back to an even split rather than crushing the media. */
+    &:not(.pp-wide):not(.pp-full) {
+      grid-template-columns:
+        minmax(0, 1fr)
+        clamp(20px, 3vw, 32px)
+        minmax(0, 0.72fr);
+    }
+  }
+
+  /* ═══ Facts — a hairline band of numbers ════════════════════════════ */
+  .pp-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+
+    .pp-fact {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    /* Band — a dense hairline strip, the instrument-panel reading */
+    &.is-band {
+      border-top: 1px solid var(--pp-rule);
+      border-bottom: 1px solid var(--pp-rule);
+
+      .pp-fact {
+        padding: 22px clamp(16px, 2vw, 28px) 24px;
+
+        & + .pp-fact {
+          border-left: 1px solid var(--pp-rule);
+        }
+        &:first-child {
+          padding-left: 0;
+        }
+      }
+    }
+
+    /* Cards — each number gets its own plate. For the two or three headline
+       figures a section is actually about. */
+    &.is-cards {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(12px, 1.6vw, 20px);
+
+      .pp-fact {
+        position: relative;
+        padding: clamp(18px, 2vw, 26px);
+        border: 1px solid var(--pp-rule);
+        border-radius: var(--pp-radius-sm);
+        background-color: var(--pp-surface);
+        transition:
+          border-color 0.28s ease,
+          background-color 0.28s ease;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: clamp(18px, 2vw, 26px);
+          width: 26px;
+          height: 1px;
+          background-color: var(--pp-accent);
+        }
+
+        &:hover {
+          border-color: var(--pp-accent-hair);
+          background-color: var(--pp-surface-raised);
+        }
+      }
+    }
+
+    .pp-fact-label {
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--pp-muted);
+    }
+
+    dd.pp-fact-value {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .pp-fact-number {
+      font-family: var(--pp-display-font);
+      font-size: clamp(1.6rem, 2.4vw, 2.125rem);
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--pp-ink);
+    }
+
+    .pp-fact-note {
+      font-family: var(--secondary-font);
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--pp-faint);
+    }
+  }
+
+  /* ═══ Code ══════════════════════════════════════════════════════════ */
+  /* Inline */
+  :not(pre) > code,
+  .code {
+    font-family: var(--code-font);
+    font-size: 0.86em;
+    font-weight: 400;
+    background-color: color-mix(in srgb, var(--pp-accent) 12%, transparent);
+    color: var(--pp-strong);
+    padding: 0.12em 0.4em;
+    border-radius: 4px;
+    line-height: normal;
+    white-space: nowrap;
+  }
+
+  /* Block: `pre` holds the frame and label, `code` is the scroller, so the
+     language chip stays put while long lines scroll under it. */
+  pre {
+    position: relative;
+    padding: 0;
+    overflow: visible;
+    background-color: var(--pp-surface);
+    border: 1px solid var(--pp-rule);
+    border-radius: var(--pp-radius);
+
+    &::before {
+      content: "code";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      padding-left: 20px;
+      border-bottom: 1px solid var(--pp-rule);
+      background-color: var(--pp-surface-raised);
+      border-radius: var(--pp-radius) var(--pp-radius) 0 0;
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      line-height: 38px;
+      color: var(--pp-faint);
+    }
+
+    /* Generic language chips — add a line to extend the set */
+    &:has(.language-json)::before {
+      content: "json";
+    }
+    &:has(.language-javascript)::before,
+    &:has(.language-js)::before {
+      content: "javascript";
+    }
+    &:has(.language-typescript)::before,
+    &:has(.language-ts)::before {
+      content: "typescript";
+    }
+    &:has(.language-cpp)::before {
+      content: "c++";
+    }
+    &:has(.language-go)::before {
+      content: "go";
+    }
+    &:has(.language-bash)::before,
+    &:has(.language-shell)::before,
+    &:has(.language-sh)::before {
+      content: "shell";
+    }
+    &:has(.language-html)::before {
+      content: "html";
+    }
+    &:has(.language-css)::before,
+    &:has(.language-scss)::before {
+      content: "css";
+    }
+    &:has(.language-python)::before {
+      content: "python";
+    }
+    &:has(.language-yaml)::before,
+    &:has(.language-yml)::before {
+      content: "yaml";
+    }
+    &:has(.language-mermaid)::before {
+      content: "diagram source";
+    }
+
+    code {
+      display: block;
+      overflow-x: auto;
+      padding: 58px 20px 20px;
+      background: none;
+      border-radius: 0;
+      font-family: var(--code-font);
+      font-size: 0.8125rem;
+      font-weight: 400;
+      line-height: 1.75;
+      white-space: pre;
+      tab-size: 2;
+
+      /* highlight.js theme ships its own surface — let ours show through */
+      &.hljs {
+        background: none;
+        padding: 58px 20px 20px;
+      }
+    }
+  }
+
+  /* ═══ Vertical rhythm ═══════════════════════════════════════════════ */
+  > * + * {
+    margin-top: 20px;
+  }
+  /* Structural blocks breathe more than running text */
+  > * + *:not(p, ul, ol, h1, h2, .spacer) {
+    margin-top: clamp(34px, 4.5vh, 48px);
+  }
+  > *:not(p, ul, ol, h1, h2, .spacer) + *:not(.spacer, h1, h2) {
+    margin-top: clamp(34px, 4.5vh, 48px);
+  }
+  /* A full-bleed beat earns more air on both sides than a card does */
+  > * + .pp-full,
+  > .pp-full + *:not(.spacer, h1, h2) {
+    margin-top: clamp(48px, 7vh, 82px);
+  }
+  > * + h1.section_title {
+    margin-top: clamp(60px, 8vh, 104px);
+  }
+  > * + h2.container_title {
+    margin-top: clamp(34px, 4.5vh, 52px);
+  }
+  > h1.section_title + *:not(.spacer) {
+    margin-top: 26px;
+  }
+  > h2.container_title + *:not(.spacer) {
+    margin-top: 16px;
+  }
+  /* `::space` directives own their spacing entirely */
+  > .spacer,
+  > .spacer + * {
+    margin-top: 0;
+  }
+
+  /* ═══ Legacy prose scaffolding ══════════════════════════════════════ */
+  .spacer {
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .side_by_side {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+
+    &.reverse {
+      flex-direction: row-reverse;
+    }
+    &.full_width {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    > ul,
+    > ol {
+      margin-top: 0;
+    }
+  }
+
+  .separation_dot {
+    width: 4px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: var(--pp-whisper);
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Flow diagram ─────────────────────────────────────────────────── */
+  .flow {
+    counter-reset: pp-flow;
+
+    .flow-track {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: 38px;
+      align-items: stretch;
+    }
+
+    .flow-step {
+      position: relative;
+      counter-increment: pp-flow;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 18px 16px;
+      border: 1px solid var(--pp-rule);
+      border-radius: var(--pp-radius-sm);
+      background-color: var(--pp-surface);
+      transition:
+        border-color 0.25s ease,
+        background-color 0.25s ease;
+
+      &:hover {
+        border-color: var(--pp-accent-soft);
+        background-color: var(--pp-surface-raised);
+      }
+
+      .flow-step-index::before {
+        content: counter(pp-flow, decimal-leading-zero);
+        font-family: var(--secondary-font);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        font-variant-numeric: tabular-nums;
+        color: var(--pp-accent);
+      }
+
+      .flow-step-title {
+        font-family: var(--article-font);
+        font-size: 0.9375rem;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--pp-strong);
+        text-wrap: balance;
+      }
+
+      .flow-step-note {
+        font-family: var(--secondary-font);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--pp-muted);
+      }
+
+      /* Connector into the next step */
+      &:not(:last-child) {
+        &::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 100%;
+          width: 38px;
+          height: 1px;
+          transform: translateY(-50%);
+          background: linear-gradient(
+            to right,
+            var(--pp-rule),
+            var(--pp-accent)
+          );
+        }
+        &::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: calc(100% + 30px);
+          width: 5px;
+          height: 5px;
+          border-top: 1px solid var(--pp-accent);
+          border-right: 1px solid var(--pp-accent);
+          transform: translateY(-50%) rotate(45deg);
+        }
+      }
+    }
+
+    .flow-caption {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--pp-rule);
+      font-family: var(--secondary-font);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--pp-muted);
+    }
+  }
+
+  /* ── Callout ──────────────────────────────────────────────────────── */
+  /* Default tone is deliberately quiet — the accent is reserved for
+     `tone="accent"`, so a page full of asides doesn't turn orange. */
+  .callout {
+    padding: 18px 22px;
+    border: 1px solid var(--pp-rule);
+    border-left: 2px solid var(--pp-whisper);
+    border-radius: 0 var(--pp-radius) var(--pp-radius) 0;
+    background-color: var(--pp-surface);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+
+    .callout-title {
+      margin: 0 0 6px;
+      font-family: var(--secondary-font);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--pp-muted);
+    }
+
+    .callout-body > * {
+      margin-top: 0;
+    }
+    .callout-body > * + * {
+      margin-top: 10px;
+    }
+
+    &.tone-accent {
+      border-left-color: var(--pp-accent);
+      background-color: var(--pp-accent-faint);
+
+      .callout-title {
+        color: var(--pp-accent);
+      }
+    }
+  }
+
+  /* ═══ Inline utility classes used from MDX ══════════════════════════ */
+  .top_16 {
+    margin-top: 16px;
+  }
+  .top_32 {
+    margin-top: 32px;
+  }
+  .bold {
+    font-weight: 600;
+    color: var(--pp-strong);
+  }
+  .italic {
+    font-style: italic;
+  }
+  .ref {
+    font-family: var(--secondary-font);
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.7em;
+    vertical-align: 0.45em;
+    color: var(--pp-accent);
+  }
+
+  /* ═══ "More in depth" divider label ═════════════════════════════════ */
+  #more_in_depth {
+    display: block;
+    visibility: hidden;
+    scroll-margin-top: var(--pp-header-offset);
+  }
+
+  #more_in_depth + h1.section_title::after {
+    content: "More in depth";
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-50%);
+    padding-right: 20px;
+    background-color: var(--bg-color);
+    font-family: var(--secondary-font);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--pp-faint);
+  }
+
+  /* `document.documentElement.lang` is set by LanguageContext, so `:lang()`
+     tracks the active locale without a JS-rendered label. */
+  &:lang(fr) #more_in_depth + h1.section_title::after {
+    content: "Plus en détails";
+  }
+
+  /* ═══ Responsive ════════════════════════════════════════════════════ */
+  /* The margin channel folds away: asides stack, strips become a
+     snap-scrolling carousel rather than a stack of full-width blocks. */
+  @media screen and (max-width: 899px) {
+    font-size: 1.0625rem;
+    line-height: 1.72;
+
+    .pp-aside {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+
+      .pp-aside-body,
+      .pp-aside-media,
+      &.side-left .pp-aside-body,
+      &.side-left .pp-aside-media {
+        grid-column: 1;
+      }
+      /* Visual first: it's the reason the aside exists. Both rows are named
+         explicitly because the desktop rule pins each child to row 1 —
+         stacking has to undo that, not leave it to auto-placement. */
+      .pp-aside-media {
+        grid-row: 1;
+        max-width: 320px;
+      }
+      .pp-aside-body {
+        grid-row: 2;
+      }
+
+      &.ratio-even {
+        grid-template-columns: minmax(0, 1fr);
+
+        .pp-aside-media {
+          max-width: none;
+        }
+      }
+    }
+
+    .pp-strip .pp-strip-track {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(58%, 1fr);
+      grid-template-columns: none;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      .pp-strip-item {
+        scroll-snap-align: start;
+      }
+    }
+    /* The carousel runs to the page edge, then pads back in */
+    .pp-strip.pp-full .pp-strip-track {
+      padding-inline: var(--pp-bleed-right);
+    }
+    .pp-strip.pp-full > .pp-caption,
+    .pp-break.pp-full .pp-break-foot {
+      margin-inline: var(--pp-bleed-right);
+      padding-inline: 0;
+    }
+
+    .side_by_side {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 20px;
+
+      &.reverse {
+        flex-direction: column;
+      }
+
+      .separation_dot {
+        display: none;
+      }
+    }
+
+    .flow .flow-track {
+      grid-auto-flow: row;
+      gap: 30px;
+    }
+    .flow .flow-step:not(:last-child) {
+      &::before {
+        top: 100%;
+        left: 28px;
+        width: 1px;
+        height: 30px;
+        transform: none;
+        background: linear-gradient(to bottom, var(--pp-rule), var(--pp-accent));
+      }
+      &::after {
+        top: calc(100% + 22px);
+        left: 28px;
+        transform: translateX(-50%) rotate(135deg);
+      }
+    }
+
+    .pp-facts.is-band {
+      grid-template-columns: 1fr 1fr;
+
+      .pp-fact {
+        padding: 18px 16px 20px;
+
+        &:nth-child(odd) {
+          padding-left: 0;
+          border-left: none;
+        }
+        &:nth-child(n + 3) {
+          border-top: 1px solid var(--pp-rule);
+        }
+
+        /* An odd final fact would otherwise sit alone against a half-row of
+           dead space — let it take the full width instead. */
+        &:last-child:nth-child(odd) {
+          grid-column: 1 / -1;
+        }
+      }
+    }
+
+    pre code,
+    pre code.hljs {
+      padding: 54px 16px 16px;
+      font-size: 0.75rem;
+    }
+  }
+
+  @media screen and (max-width: 599px) {
+    .pp-strip .pp-strip-track {
+      grid-auto-columns: minmax(76%, 1fr);
+    }
+
+    .pp-facts.is-band {
+      grid-template-columns: 1fr;
+
+      .pp-fact {
+        padding-inline: 0;
+        border-left: none;
+
+        & + .pp-fact {
+          border-left: none;
+          border-top: 1px solid var(--pp-rule);
+        }
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

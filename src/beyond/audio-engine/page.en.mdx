@@ -1,0 +1,44 @@
+import { Link } from "react-router-dom";
+
+import cover from "./assets/cover.svg";
+
+export const meta = {
+  slug: "audio-engine",
+  title: "Audio Engine",
+  titlePrefix: "Audio; Infrastructure",
+  tag: "infrastructure",
+  subtitle:
+    "Rendr already turns a JSON file into a video by itself. Audio Engine asks if sound can work the same way.",
+  description:
+    "Rendr treats video as a JSON file that renders itself. Audio Engine applies that same idea to sound: mixing, ducking, EQ, and spatial panning, all declared in the composition instead of dragged around in a DAW. Audio doesn't get frame independence for free, though, so how it should actually be built is still an open question.",
+  duration: "Unbuilt",
+  date: "2026-08-26",
+  stats: [
+    { label: "Status", value: "Idea, architecture not decided" },
+    {
+      label: "Open question",
+      value: "One runtime, or two processes talking over a stream",
+    },
+  ],
+  style: {
+    "--project-accent-color": "#ffb454",
+  },
+  cover,
+};
+
+# The idea
+
+<Lede>
+  <Link to="/project/rendr">Rendr</Link> turns a JSON file into video without
+  anyone touching a timeline. Audio Engine asks the same question of sound:
+  can mixing, ducking, EQ, and spatial panning all live in the composition
+  too, instead of getting dragged around by hand in a DAW?
+</Lede>
+
+Here's the catch, stated plainly instead of hidden. <Link to="/project/rendr">Rendr</Link> is fast because frames don't depend on each other. Ask for frame 400 and you get frame 400, no need for frame 399 first. Audio doesn't cooperate that way. A compressor needs to look ahead at what's coming. A reverb tail bleeds into the samples that come after it. Nothing that makes "professional-grade" audio processing actually professional is frame-independent by nature.
+
+So this idea can't just be "add an audio engine." A real question still needs an answer, and nobody's answered it yet. Does audio live inside the same browser runtime as the video engine, keeping the one-codebase-everywhere philosophy Rendr was built on? Or does real audio processing mean breaking that rule: running a dedicated subprocess built for audio specifically, and streaming its output back into the browser for editing?
+
+Both answers work. Neither is free. Keep the engine in one place, and it's limited to whatever the Web Audio API can and can't do. Split it in two, and it gets real audio tooling, the kind of processing a browser was never built for, but the engine stops being one runtime and becomes two, talking to each other over a stream.
+
+That's where the thinking stops for now.

@@ -1,0 +1,481 @@
+/* The medium demo: player, controls, snippet — stacked, in that order.
+ *
+ * No literal colours: every value is a `--pp-*` / `--rendr-*` token, so the
+ * whole demo retints from this project's `theme.js`.
+ *
+ * ── Everything here is scoped under `.se-demo` ────────────────────────────
+ * This kit is copied per project, so more than one copy of this stylesheet
+ * can exist on the site under the same `.md-*` class names. They are separate
+ * pages, but this is a single-page app: navigate from one project to another
+ * without a reload and both stylesheets are in the document, at which point
+ * the later one silently restyles the earlier project's demo. `.se-demo`
+ * (added to the root in MediumDemo.jsx) is what keeps these edits here.
+ * `&.rendr-medium` is the root itself; everything else is a descendant.
+ *
+ * ── The shape this is going for ───────────────────────────────────────────
+ * Two halves of one object, not four stacked strips. Above the transport it is
+ * a screen; below it, a file. The transport is the seam between them, and it
+ * is the only band that gets a raised surface — the hairline stack that used
+ * to separate every section (stage / transport / fps / code / note) read as
+ * five unrelated slabs. */
+
+@use "./Transport.scss";
+
+.se-demo {
+  --md-radius: 10px;
+
+  &.rendr-medium {
+    border: 1px solid var(--pp-rule);
+    border-radius: var(--md-radius);
+    background: var(--pp-surface);
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.03) inset,
+      0 18px 46px -28px rgba(0, 0, 0, 0.9);
+  }
+
+  /* ── the player ────────────────────────────────────────────────────────── */
+
+  .md-stage-viewport {
+    position: relative;
+    width: 100%;
+    /* Capped so a portrait composition can't grow to fill a desktop screen.
+       The stage is fitted *inside* this box by `useStageFit`, so whatever is
+       left over reads as letterboxing rather than as a layout bug. A 9:16
+       piece needs more room than a 16:9 one before it looks like a stamp. */
+    max-height: 580px;
+    overflow: hidden;
+    /* Not flat black: a hair of warmth, so the letterbox belongs to the page
+       rather than punching a hole in it. */
+    background: #050404;
+    cursor: pointer;
+    /* The whole surface is a play/pause target, so a double-click shouldn't
+       select the frame's text as if it were a document. */
+    user-select: none;
+    -webkit-user-select: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--rendr-accent);
+      outline-offset: -2px;
+    }
+  }
+
+  .md-stage {
+    position: absolute;
+    inset: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .md-idle {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      var(--rendr-accent-dim) 0%,
+      #050404 70%
+    );
+  }
+
+  .md-error {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 0 20px;
+    color: var(--rendr-accent-bright);
+    font-family: var(--code-font);
+    font-size: 0.74rem;
+    text-align: center;
+  }
+
+  /* ── the gate ──────────────────────────────────────────────────────────── */
+
+  /* What the reader sees before anything is fetched. The clip and the decoder
+     both cost something real, so the click that buys them is explicit. */
+  .md-gate {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px 28px;
+    text-align: center;
+    background: radial-gradient(
+      120% 90% at 50% 42%,
+      var(--rendr-accent-dim) 0%,
+      #050404 72%
+    );
+  }
+
+  .md-gate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 22px;
+    border: 1px solid var(--rendr-accent);
+    border-radius: 50px;
+    background: var(--rendr-accent);
+    color: var(--pp-on-accent);
+    font-family: var(--secondary-font);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition:
+      background-color 0.18s ease,
+      box-shadow 0.22s ease;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    &:hover {
+      background: var(--rendr-accent-bright);
+      border-color: var(--rendr-accent-bright);
+      box-shadow: 0 0 0 6px
+        color-mix(in srgb, var(--rendr-accent) 16%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--rendr-accent-bright);
+      outline-offset: 3px;
+    }
+  }
+
+  .md-gate-note {
+    margin: 0;
+    max-width: 42ch;
+    color: var(--pp-faint);
+    font-family: var(--secondary-font);
+    font-size: 0.72rem;
+    line-height: 1.55;
+  }
+
+  /* Centred boot message, between the click and the first frame. */
+  .md-booting {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin: 0;
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+  }
+
+  /* The engine's own loading signal, surfaced. */
+  .md-loading {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px 5px 9px;
+    border-radius: 50px;
+    background: rgba(0, 0, 0, 0.66);
+    backdrop-filter: blur(6px);
+    color: var(--pp-ink);
+    font-family: var(--code-font);
+    font-size: 0.68rem;
+    pointer-events: none;
+  }
+
+  .md-spinner {
+    width: 11px;
+    height: 11px;
+    border: 2px solid color-mix(in srgb, var(--rendr-accent) 35%, transparent);
+    border-top-color: var(--rendr-accent);
+    border-radius: 50%;
+    animation: md-spin 0.7s linear infinite;
+  }
+
+  /* ── fps ───────────────────────────────────────────────────────────────── */
+
+  /* Rides directly under the transport on the same raised surface, so the two
+     read as one control deck rather than two bands with a rule between. */
+  .md-fps {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    padding: 0 12px 10px;
+    border-top: none;
+    background: var(--pp-surface-raised);
+  }
+
+  .md-fps-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--pp-whisper);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+  }
+
+  .md-chip {
+    padding: 3px 11px;
+    border: 1px solid var(--pp-rule);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.66rem;
+    cursor: pointer;
+    transition:
+      border-color 0.16s ease,
+      background-color 0.16s ease,
+      color 0.16s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--rendr-accent);
+      color: var(--pp-ink);
+    }
+
+    &.is-on {
+      border-color: var(--rendr-accent);
+      background: var(--rendr-accent-dim);
+      color: var(--rendr-accent-bright);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--rendr-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  .md-fps-note {
+    margin-left: auto;
+    color: var(--pp-whisper);
+    font-family: var(--code-font);
+    font-size: 0.64rem;
+  }
+
+  /* ── the snippet ───────────────────────────────────────────────────────── */
+
+  /* A filename bar, so the block below reads as a file being edited rather
+     than a code sample that happens to have inputs in it. That is the actual
+     claim: the picture above is downstream of this text. */
+  .md-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-top: 1px solid var(--pp-rule);
+    background: var(--pp-surface);
+    color: var(--pp-faint);
+    font-family: var(--code-font);
+    font-size: 0.68rem;
+  }
+
+  .md-file-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rendr-accent);
+    box-shadow: 0 0 8px -1px var(--rendr-accent);
+  }
+
+  .md-file-hint {
+    margin-left: auto;
+    color: var(--pp-whisper);
+    font-family: var(--secondary-font);
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+  }
+
+  .md-code {
+    padding: 10px 0 12px;
+    border-top: 1px solid var(--pp-rule);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--pp-rule) transparent;
+  }
+
+  /* The filename bar already drew the rule that separates the deck from the
+     file. Two in a row reads as a seam. */
+  .md-file + .md-code {
+    border-top: none;
+    padding-top: 2px;
+  }
+
+  .md-block {
+    font-family: var(--code-font);
+    font-size: 0.72rem;
+    line-height: 1.9;
+  }
+
+  .md-gap {
+    display: block;
+    padding: 2px 0 6px 56px;
+    color: var(--pp-whisper);
+    letter-spacing: 0.3em;
+    user-select: none;
+  }
+
+  .md-row {
+    display: flex;
+    white-space: pre;
+    color: var(--pp-muted);
+  }
+
+  .md-gutter {
+    flex: 0 0 auto;
+    width: 40px;
+    padding-right: 12px;
+    text-align: right;
+    color: var(--pp-whisper);
+    opacity: 0.5;
+    user-select: none;
+  }
+
+  .md-text {
+    flex: 1;
+    min-width: 0;
+    padding-right: 14px;
+  }
+
+  .md-key {
+    color: var(--rendr-accent-bright);
+  }
+
+  .md-val {
+    color: var(--pp-body);
+  }
+
+  .md-row-elide .md-text {
+    color: var(--pp-whisper);
+  }
+
+  /* An editable line. Tinted, with an accent edge, so the handful of rows a
+     reader can actually touch are findable without reading the whole block. */
+  .md-row.is-edit {
+    color: var(--pp-ink);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--rendr-accent) 15%, transparent),
+      color-mix(in srgb, var(--rendr-accent) 4%, transparent) 70%,
+      transparent
+    );
+    box-shadow: inset 2px 0 0 var(--rendr-accent);
+  }
+
+  .md-quote {
+    color: var(--pp-whisper);
+  }
+
+  .md-hex {
+    color: var(--rendr-accent-bright);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .md-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    input {
+      padding: 1px 6px;
+      border: 1px solid var(--rendr-accent-deep);
+      border-radius: 4px;
+      background: var(--rendr-accent-dim);
+      color: var(--rendr-accent-bright);
+      font-family: var(--code-font);
+      font-size: 0.72rem;
+      transition:
+        border-color 0.16s ease,
+        box-shadow 0.16s ease;
+
+      &:hover {
+        border-color: var(--rendr-accent);
+      }
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--rendr-accent);
+        box-shadow: 0 0 0 2px
+          color-mix(in srgb, var(--rendr-accent) 30%, transparent);
+      }
+    }
+
+    /* The swatch is the control here, so it gets a real target rather than
+       looking like a stray coloured pixel in the text. */
+    input[type="color"] {
+      width: 26px;
+      height: 18px;
+      padding: 2px;
+      cursor: pointer;
+    }
+  }
+
+  .md-note {
+    margin: 0;
+    padding: 11px 14px 13px;
+    border-top: 1px solid var(--pp-rule);
+    color: var(--pp-faint);
+    font-family: var(--secondary-font);
+    font-size: 0.72rem;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 620px) {
+    /* Another copy of this kit hides its gate note under 560px with an
+       unscoped rule, and every project's stylesheet is loaded on every page
+       (`src/lib/projects.js` globs the MDX eagerly), so that rule reaches this
+       demo too. This stage is 9:16 and ~500px tall on a phone: there is room,
+       and the note is what says the click costs a real download. */
+    .md-gate-note {
+      display: block;
+    }
+
+    .md-stage-viewport {
+      max-height: 62vh;
+    }
+
+    .md-gutter {
+      width: 32px;
+      padding-right: 8px;
+    }
+
+    .md-block {
+      font-size: 0.68rem;
+    }
+
+    .md-file-hint {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .md-spinner {
+      animation-duration: 2.4s;
+    }
+
+    .md-chip,
+    .md-field input {
+      transition: none;
+    }
+  }
+}
+
+/* Keyframes are document-global; nesting them changes nothing but readability.
+   The name is shared with the other copies of this kit, and identical in all
+   of them, so a collision is a no-op rather than a bug. */
+@keyframes md-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

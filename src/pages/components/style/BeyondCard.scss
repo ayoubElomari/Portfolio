@@ -1,0 +1,202 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Beyond teaser card — a small tile, not a project row.
+
+   Stays inside the site's existing language (1px hairline box, hard edges,
+   accent on hover, fade-up reveal) but at tile scale so several sit in a
+   grid. Sized by the grid it lives in; nothing here fixes a width.
+   ───────────────────────────────────────────────────────────────────────── */
+a.beyond-card-link {
+  /* The card's accent comes from the entry's own `meta.style`, applied
+     inline on this element — the very same object its article page puts on
+     its root, so a tile and the page it opens are always the same colour.
+     An entry that sets no style falls back to the site accent. */
+  --card-accent: var(--project-accent-color, var(--accent-color));
+
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  min-width: 0;
+
+  &:focus-visible {
+    outline: 2px solid var(--card-accent);
+    outline-offset: 4px;
+  }
+}
+
+.beyond-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  background-color: #0a0908;
+  transition:
+    border-color 0.3s var(--easing),
+    background-color 0.3s var(--easing),
+    opacity 0.7s var(--easing),
+    transform 0.7s var(--easing);
+
+  /* Fades up as it scrolls into view */
+  opacity: 0;
+  transform: translateY(24px);
+
+  &.is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  .beyond-card-visual {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-color);
+    background-color: #121010;
+
+    img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      filter: saturate(0.8) brightness(0.85);
+      transition:
+        transform 0.5s var(--easing),
+        filter 0.4s ease;
+    }
+
+    /* Corner ticks — the same "specimen plate" mark the project template uses */
+    .card-tick {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-color: var(--card-accent);
+      border-style: solid;
+      border-width: 0;
+      opacity: 0;
+      transition:
+        opacity 0.32s ease,
+        transform 0.32s var(--easing);
+
+      &.tl {
+        top: 10px;
+        left: 10px;
+        border-top-width: 1px;
+        border-left-width: 1px;
+        transform: translate(5px, 5px);
+      }
+      &.br {
+        bottom: 10px;
+        right: 10px;
+        border-bottom-width: 1px;
+        border-right-width: 1px;
+        transform: translate(-5px, -5px);
+      }
+    }
+  }
+
+  .beyond-card-body {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 20px 22px;
+  }
+
+  .beyond-card-tag {
+    font-family: var(--secondary-font);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--card-accent);
+  }
+
+  .beyond-card-title {
+    font-family: var(--primary-font);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: var(--primary-color);
+    text-wrap: balance;
+    transition: color 0.28s ease;
+  }
+
+  .beyond-card-blurb {
+    /* Pushes the go-arrow to the bottom so cards of unequal text length
+       still line their affordance up across a row. */
+    flex: 1;
+    padding-right: 34px;
+    font-family: var(--article-font);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--third-color);
+    text-wrap: pretty;
+  }
+
+  .beyond-card-go {
+    position: absolute;
+    right: 20px;
+    bottom: 22px;
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    opacity: 0.45;
+    transition:
+      opacity 0.28s ease,
+      transform 0.34s var(--easing);
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+    svg path {
+      fill: var(--primary-color);
+      transition: fill 0.25s ease;
+    }
+  }
+}
+
+a.beyond-card-link:hover .beyond-card,
+a.beyond-card-link:focus-visible .beyond-card {
+  border-color: color-mix(in srgb, var(--card-accent) 45%, transparent);
+  background-color: #121010;
+
+  .beyond-card-visual img {
+    transform: scale(1.04);
+    filter: saturate(1) brightness(1);
+  }
+
+  .card-tick {
+    opacity: 0.9;
+    transform: none;
+  }
+
+  .beyond-card-title {
+    color: var(--card-accent);
+  }
+
+  .beyond-card-go {
+    opacity: 1;
+    transform: translate(3px, -3px);
+
+    svg path {
+      fill: var(--card-accent);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beyond-card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .beyond-card .beyond-card-visual img,
+  .beyond-card .card-tick,
+  .beyond-card .beyond-card-go {
+    transition-duration: 0.01ms;
+  }
+  a.beyond-card-link:hover .beyond-card .beyond-card-visual img {
+    transform: none;
+  }
+}

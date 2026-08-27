@@ -1,0 +1,267 @@
+import cover from "./assets/cover.svg";
+import { rendrStyle } from "./theme.js";
+
+import "./style/page.scss";
+
+{/* Not the bench itself: `LazyBench` code-splits it, so neither the editor UI
+    nor the engine is in this page's initial chunk. See the note in that
+    file. */}
+import { LazyBench } from "./live-demos";
+import { SHORT_BY_RATIO, DEFAULT_RATIO, POSTER_FRAME } from "./compositions/short.js";
+import { FrameIndependence } from "./visuals/FrameIndependence.jsx";
+import { RenderFarm } from "./visuals/RenderFarm.jsx";
+import { ShortEmbed } from "./visuals/ShortEmbed.jsx";
+import { V1RoundTrip } from "./visuals/V1RoundTrip.jsx";
+import { CapturePath } from "./visuals/CapturePath.jsx";
+import { LazyMediumDemo, LazyMiniDemo } from "./live-demos";
+import { mediumVideo } from "./compositions/mediumVideo.js";
+import { miniKeyframes, EASING_NAMES } from "./compositions/miniKeyframes.js";
+
+export const meta = {
+  slug: "rendr",
+  title: "Rendr",
+  titlePrefix: "Rendering Engine; Video Automation",
+  subtitle: "Built to push out 1,000 videos an hour, and not break a sweat.",
+  description:
+    "Rendr is a rendering engine built to become the infrastructure behind automated video at scale, the same code running on one machine or a thousand.",
+  cover,
+  duration: "1 yr",
+  date: "2026-08-21",
+  stats: [
+    { label: "Single thread", value: "500 fps" },
+    { label: "8 threads, theoretical", value: "2,500 fps" },
+    { label: "30s clip @ 30fps", value: "~0.36s" },
+    { label: "Architecture", value: "Frame-independent" },
+  ],
+  style: rendrStyle,
+};
+
+export const benchLabels = {
+  barLive: "Live. This is the engine, running here.",
+  benchCaption:
+    "A 16-second edit, two clips, a photograph and word-synced captions, as a text file. On the left is the file, on the right is what it draws. Change anything on the left. The ratio chips load a different cut, because nothing in the format reflows.",
+};
+
+export const mediumEdits = [
+  { path: ["variables", "kicker"], type: "text", label: "kicker" },
+  { path: ["variables", "title"], type: "text", label: "title" },
+  { path: ["variables", "subtitle"], type: "text", label: "subtitle" },
+  { path: ["variables", "accent"], type: "color", label: "accent" },
+];
+
+{/* Two values out of the whole file, which is the point of putting this under
+    "a composition is just a JSON file". The easing options come from the
+    engine's own interpolator rather than a list typed out here, so the
+    dropdown can only ever offer curves that actually exist. */}
+export const miniEdits = [
+  {
+    path: ["timeline", 1, "style", "&", "left", "keyframes", 0, "easing"],
+    type: "select",
+    label: "easing",
+    options: EASING_NAMES,
+  },
+  {
+    path: ["timeline", 1, "style", "&", "left", "keyframes", 1, "value"],
+    type: "length",
+    label: "to",
+    min: 160,
+    /* Not the 1132px the 1280-wide stage would allow. `easeOutBack`
+       deliberately overshoots its destination, by about 90px at this
+       distance, and the box is 148px wide, so anything past the authored
+       1036 sends it off the right edge mid-flight and the overshoot reads as
+       a clipping bug rather than as the curve doing its job. */
+    max: 1036,
+    step: 4,
+  },
+];
+
+export const mediumLabels = {
+  gateNote:
+    "Boots the real renderer in this tab and loads about 840 KB of video. The decode happens live, right here, not ahead of time.",
+};
+
+export function HeroDemo() {
+  return (
+    <LazyBench
+      variants={SHORT_BY_RATIO}
+      defaultVariant={DEFAULT_RATIO}
+      posterFrame={POSTER_FRAME}
+      filename="short.rendr.json"
+      labels={benchLabels}
+    />
+  );
+}
+
+<p className="rendr-summary-heading">Summary</p>
+
+<p className="rendr-summary-label">What it is</p>
+
+Rendr is a rendering engine. It takes a JSON file, a composition describing clips, text, timing, and animation curves, and renders it into an MP4, frame by frame, from inside a browser instead of a traditional video editor.
+
+<p className="rendr-summary-label">How it works</p>
+
+Every element in a composition, a clip, a caption, a title, is a self-contained object with its own timeline. Ask for frame 400 and Rendr doesn't need frame 399 first: it reads the composition, works out what every element looks like at that exact millisecond, and draws it. That's what makes it fast. Nothing waits on anything else, so frames render independently, in parallel, across as many threads as you give it.
+
+<Frame plain label="Frame independence" caption="Any frame can be drawn on its own, in any order, without the frames before it.">
+  <FrameIndependence />
+</Frame>
+
+<p className="rendr-summary-label">History</p>
+
+v1 was a beta, a proof of concept, built quickly to prove a browser could render video at all. It stayed rough by design: fast enough to ship, not fast enough to trust with anything serious. Screenshots stood in for real capture, video handling was a workaround more than a solution, but it held together well enough to become the backbone of Shorts Engine, an automated pipeline that scripted, rendered, and posted videos on its own.
+
+v2 was a full rewrite: a cleaner codebase, a more refined architecture, and a genuinely optimized rendering pipeline, built to be fast and reliable enough to actually build a business on, not just prove one was possible.
+
+<p className="rendr-summary-label">Results</p>
+
+<Facts variant="cards">
+  <Fact label="Frame purity" value="100%" note="Every pixel of a rendered frame checked against a known test color, none off" />
+  <Fact label="Single-thread speed" value="500 fps" />
+  <Fact label="Preprocessing needed" value="Zero" note="Video decodes natively inside the browser, nothing baked in before render starts" />
+</Facts>
+
+<p className="rendr-summary-label">Vision</p>
+
+Video is the most consumed form of media on the planet, a trillion-dollar industry, and almost none of it gets made without someone actually doing the editing for every single video. Imagine a hundred channels running across every platform, each one putting out videos good enough that you'd actually stop and watch. That's what Rendr is built to make possible.
+
+{/* Marks where the summary above ends and the deep dive begins. The shared
+    template prints a "More in depth" rule label over this heading and lights
+    up the hero's jump button. See `src/projects/CLAUDE.md`. */}
+<span id="more_in_depth"></span>
+
+# The idea
+<Lede>I'd hit a wall. A few projects in a row just weren't working, nothing serious, just that specific kind of stuck. So I made myself a deal: no screens today. Lay in bed, stare at the ceiling, let yourself be bored.</Lede>
+
+Three minutes in, the idea showed up: can we make video using HTML?
+
+I got up, turned the PC back on, and looked for anyone who'd already built it. Nothing good existed. I'd used MoviePy and the usual Python video tools before, for other automated-video projects, and they were slow, clunky, not it. The gap was real. So I started building.
+
+May or June 2025, the exact week's fuzzy. That's where Rendr starts.
+
+# v1, the fastest thing that would ship
+
+The idea only means something if it exists. Nobody funds a browser video renderer that lives in a notes app, and nobody reaches out about one either. So v1 wasn't built to be good. It was built to prove the premise was even real: that a browser, the thing sitting open on every laptop right now, could render video. Every decision underneath it optimized for one thing, getting something working, not getting the output right.
+
+Capture was the first problem, and the solution was blunt on purpose. Puppeteer opened the composition as a live web page, the same way a browser opens any site, and then screenshotted it. Frame by frame, PNG by PNG, however many thousand times a single video needed. Each image got handed off to FFmpeg, which stitched the pile back into a finished file.
+
+It worked. That part matters more than it sounds like it should. But it was slow in a way that compounds. Roughly 70 milliseconds just to capture one frame, before FFmpeg had even started doing its own job downstream. Multiply that across every frame of every video, across every channel running at once, and the cost stops being a rounding error.
+
+<Frame plain label="The v1 round trip" caption="Video became text going in, frames became images coming out, and both conversions are gone by v2.">
+  <V1RoundTrip />
+</Frame>
+
+Video was the harder half of the problem, and there wasn't a clean answer for it yet. Decoding a clip live, inside the browser, frame by frame, wasn't something I knew how to do at the time. WebCodecs wasn't a tool in the kit. So the clips got handled before the browser ever opened, not inside it.
+
+A Node.js script did the work up front. It spun up FFmpeg, tore every video down into its individual frames, and packed each one as base64<sup className="ref">1</sup>, plain text standing in for image data. That text got buried straight into the JSON composition itself, so by the time the browser actually opened the file, the video wasn't a video anymore. It was a wall of encoded pixels sitting in memory, waiting to be served to the page one frame at a time, at whatever timestamp needed it.
+
+<Callout tone="accent" title="Terms">
+  <p className="rendr-term"><span className="ref">1</span> **base64**: a way of writing raw binary data, the actual 1s and 0s behind an image, as plain text characters, so a format that only understands text, like JSON, can carry it anyway.</p>
+</Callout>
+
+It was clumsy, and everyone who's touched it since knows it. Memory took a real hit running it this way, and nothing about the approach was built to last more than a season. But none of that was the point. It worked well enough to run in production, to power a real automated pipeline, and to prove the whole idea deserved a proper rebuild.
+
+### That's the only bar v1 ever had to clear.
+
+# Shorts Engine, and Morocco
+
+v1.3.1 was the version that actually shipped. Not shipped as in demoed, shipped as in it ran a real business end to end, without me touching it, for weeks at a time.
+
+The system was called Shorts Engine, and the loop was simple to describe and genuinely satisfying to watch run. It pulled posts from Reddit, filtered down to the ones that were actually interesting, split the good ones into parts, and ran each part through an AI model with a system prompt and a user prompt to turn it into a script. From there it assembled everything, the script, the timing, the visuals, into a JSON composition, handed that composition to Rendr, and posted the finished video straight to YouTube through the API. No human in the loop, start to finish.
+
+<Frame label="Real output" caption="One of the videos that loop posted, still up on the channel. A Reddit thread, gameplay footage, a voice over and word-synced captions, assembled and published without anyone touching it.">
+  <ShortEmbed />
+</Frame>
+
+It ran across roughly four channels, five videos a day each, for about a month and a half. I deployed a cloud version with its own reboot and recovery logic, so if something crashed at 3am it would come back on its own, and it pushed a notification straight to my phone if it ever failed for real. I ran this while I was traveling in Morocco for two weeks, checking in from my phone between everything else I was doing, watching videos get scripted, rendered, and posted without me anywhere near a keyboard. It was the first time automation felt real to me instead of theoretical. Genuinely one of the best feelings I've had building anything.
+
+It didn't last, but not because the renderer failed. The channels got shadow-banned, quality-nerfed by whatever was watching for bot behavior on the platform side, probably flagged from day one given how fast they were posting. Views dropped from a real audience down to a couple per video, and there wasn't a way to fight that from the outside.
+
+There was a second, quieter problem underneath it the whole time, though, and it's the one that actually mattered for what came next. Rendering one minute of video took around 20 seconds, and only by running full throttle across 8 to 10 CPU threads at once. Sometimes the output came out corrupted. That's the kind of number that's fine for a proof of concept and completely wrong for a business, and it's the real reason v2 had to happen, platform shutdown or not.
+
+# v2, problem one, replacing Puppeteer with CEF
+
+Two things had to change for v2 to mean anything, and the first one was Puppeteer. The 70 milliseconds it cost to capture a single frame wasn't a rounding error anymore once the goal was a real render farm and not a proof of concept. Screenshotting a page means encoding an image, PNG by PNG, thousands of times a video, and that encoding step was the actual cost. Fixing it meant not screenshotting at all.
+
+The answer was to stop using a browser I didn't control and build one I did. CEF<sup className="ref">2</sup> lets you embed a full Chromium browser inside your own application instead of launching a separate process and talking to it from the outside, which meant I could reach into the render loop directly instead of going through a screenshot API. I'd never worked with it before, and it took a genuinely long time to get comfortable in unfamiliar territory that deep in the browser stack. But it came together.
+
+The mechanism, once it worked, was almost embarrassingly simple compared to what it replaced. Request a frame from the CEF instance, and instead of encoding that frame as an image, it copies the raw pixel buffer straight into a slot of shared memory<sup className="ref">3</sup>, memory both the browser process and the Node.js process can read from directly, no serialization in between. CEF sends back a signal saying the frame is ready. Node reads that memory slot and hands it straight to FFmpeg. No PNG, no decode step, no round trip through disk or a network socket. Just pixels, moving from one process to another as fast as memory allows.
+
+<Frame plain label="Capture path" caption="The screenshot and its PNG encode are gone, so a frame reaches the encoder as raw pixels instead of being turned into an image first.">
+  <CapturePath />
+</Frame>
+
+<Callout tone="accent" title="Terms">
+  <p className="rendr-term"><span className="ref">2</span> **CEF (Chromium Embedded Framework)**: a way to embed a full Chromium browser directly inside another application, rather than controlling a separate browser process from the outside.</p>
+  <p className="rendr-term"><span className="ref">3</span> **Shared memory**: a block of memory two separate programs can both read and write directly, used here so the browser and the video encoder can hand off a frame without copying it over a slower channel like a file or a network socket.</p>
+</Callout>
+
+That change alone got capture up to 500 frames per second on a single thread, over 30 times faster than the old screenshot path. But speed on its own wasn't enough to trust it. I needed to know the pixels coming out the other end were actually correct, not just fast, so I built a purity test: render frames of a single known color, then check every individual pixel in the result against that exact value. The first version of the test failed. Some frames came back a slightly different color than the one before them, evidence something in the pipeline was leaking state between frames it shouldn't have touched. Tracking that down and fixing it was what finally got the engine to 100 percent, every pixel, every frame, exactly the color it was supposed to be.
+
+# v2, problem two, rendr-web and the video asset rewrite
+
+CEF solved capture. It didn't solve the other half of the problem, the one that had been sitting there since v1 and quietly getting worse: video clips still had to be preprocessed by FFmpeg into base64 before the browser ever opened the file. That approach shipped a real product, but it was never going to scale, and by v2 there wasn't a good excuse left to keep it around. The fix meant decoding video natively, live, inside the browser, using WebCodecs<sup className="ref">4</sup> instead of working around it. That turned out to be the harder of the two problems, by a wide margin. It took the better part of a year, spread out and not continuous, picked up and put down between everything else, to get right.
+
+The core idea is straightforward to say and genuinely difficult to build: take a video file and hand the browser its frames directly, decoded on demand, instead of pre-baking every frame into a blob before rendering starts. Getting there meant building rendr-web from scratch, a pipeline that demuxes<sup className="ref">5</sup> a video file using mp4box, pulling apart the container to find the actual encoded video stream inside it, then feeds that stream to the browser's native decoder frame by frame.
+
+The part that made this genuinely hard was GOPs<sup className="ref">6</sup>. Video isn't stored as a flat sequence of complete images. Most frames are just the difference from the frame before them, and they're grouped into chunks, GOPs, that all depend on one key frame to decode correctly. Ask for frame 400 and the decoder might actually need frame 385 to make sense of it, because 400 only exists as a set of changes layered on top of everything before it back to the last keyframe. rendr-web has to know which GOP a requested frame lives in, make sure that GOP is decoded and sitting in cache before the frame is needed, and evict the ones it no longer needs so memory doesn't quietly climb for the length of the video. Get the caching wrong and frames come out corrupted or decoding stalls. Get it right and the browser just plays back exactly the range you ask for, on demand, no preprocessing step in front of it.
+
+<Callout tone="accent" title="Terms">
+  <p className="rendr-term"><span className="ref">4</span> **WebCodecs**: a browser API that lets a web page decode and encode video and audio directly, without a separate library or preprocessing step outside the browser.</p>
+  <p className="rendr-term"><span className="ref">5</span> **Demux (demultiplex)**: splitting a video file's container apart from the audio and video streams packed inside it, so each stream can be decoded on its own.</p>
+  <p className="rendr-term"><span className="ref">6</span> **GOP (group of pictures)**: a chunk of video frames that all depend on one full "key" frame to decode, since most frames in between only store what changed since the last one.</p>
+</Callout>
+
+What came out the other end is the part of Rendr that actually earns the name rendr-web: the piece that takes a JSON composition and turns it into frame-independent frames, ready to be captured. It isn't the whole engine. Capture is CEF and shared memory, encoding is still FFmpeg at the end of the line. rendr-web is the middle: the part that reads what a video is supposed to look like and draws it, frame by frame, without ever needing to preprocess a single clip first.
+
+<Frame plain bleed="wide" label="Live, in this page" caption="Real footage, decoded through WebCodecs as you watch. Change a line on the right and the picture responds.">
+  <LazyMediumDemo
+    composition={mediumVideo}
+    edits={mediumEdits}
+    note="Nothing here is pre-baked, including the words you're about to change."
+    labels={mediumLabels}
+  />
+</Frame>
+
+# Why a browser, and where this actually goes
+
+The browser is the most powerful UI surface that exists. It ships everywhere, it renders almost anything you can imagine, and building an app on top of it is faster than building on almost anything else. Every editor Rendr could grow into (visual, audio, a full timeline) already lives inside the same runtime that's doing the rendering. That's not a coincidence. It's the reason the whole engine is built on a browser instead of a native renderer.
+
+Frame independence isn't just an optimization. It's what makes the next version possible. Because no frame depends on any other, rendering doesn't have to happen on one machine at all. Split a composition into frame ranges, hand each range to a different machine anywhere in the world, and let an orchestrator collect the results and stitch the final video back together. A render farm that scales the way a CDN does: one machine or a thousand, same code, same output.
+
+It also means the work doesn't have to be split evenly. A video is rarely uniform: a few seconds of heavy compositing scattered between long, cheap stretches. Route the expensive frame groups to a powerful machine and let cheaper machines chew through the rest, or handle the orchestration itself. Pay for horsepower only on the frames that actually need it, instead of running the whole video on the most expensive machine you own. At scale, that's not a small saving, it's the difference between a render farm that's viable and one that isn't.
+
+<Frame plain bleed="wide" label="Uneven split" caption="The short, expensive stretch goes to a bigger machine while the cheap ones run in parallel, and every result lands back in order.">
+  <RenderFarm />
+</Frame>
+
+The next piece of that, still ahead: a calculator that reads a composition before a single frame renders and estimates the cost, time, and memory each frame group will take. Know the bill before you pay it, and route accordingly. It's not built yet, but it's the natural next step once you've already committed to frames that don't depend on each other.
+
+That's the shape of the business Rendr was always meant to become. Not a rendering engine on its own, a platform other people build automated video businesses on top of. The engine underneath it is done.
+
+### What's still ahead is everything that gets built on it.
+
+# What's next
+
+There are a thousand video editors already. Building another one isn't the pitch, and it never was. The actual goal, since the idea first showed up staring at a ceiling, was never "make a video." It was making a lot of good videos, automatically, as cheaply as possible, without a person touching most of them. Everything documented above, the engine, the frame independence, the render farm vision, all of it exists in service of that one goal, not the other way around.
+
+Here's what that actually looks like built out. Picture something closer to n8n<sup className="ref">7</sup> than Premiere: a canvas of automation nodes wired together, one node pulling data from an API, another running it through an LLM, another parsing the result. One of those nodes is called Editor. Click it, and it drops you into a separate app, a real timeline editor, except you're not cutting a single video, you're building a template. You see exactly what the data flowing through your automation looks like once it lands inside the composition, and you shape the video around that: colors, layout, audio, timing, all of it previewable against real sample data. What comes out isn't a video. It's a reusable shape a video can be poured into. Wire that template into the automation, point the whole thing at a schedule, and now data gets fetched, reshaped by AI, dropped into the template, and rendered into a finished video with nobody touching any of it after the first setup.
+
+<Callout tone="accent" title="Terms">
+  <p className="rendr-term"><span className="ref">7</span> **n8n**: a visual automation tool where you build a workflow by connecting nodes on a canvas, each node handling one step, like fetching data, transforming it, or triggering an action.</p>
+</Callout>
+
+Push it one step further and the template stops needing a human at all. A composition is just a JSON file. That's not an implementation detail, it's the whole opening for AI to write the file directly, generating full compositions on its own once it's good enough at the format. Not assisting an editor. Being the editor.
+
+<Frame plain bleed="wide" label="The whole interface" caption="One element, one property, one curve. Change either value on the left and the picture follows, because the file is all there is to change.">
+  {/* fps chips left on: `settings.fps` is a field in the same file as the two
+      edits above, so a control that retimes the whole thing without touching
+      a coordinate is more of the section's argument, not a distraction from
+      it. */}
+  <LazyMiniDemo composition={miniKeyframes} edits={miniEdits} />
+</Frame>
+
+None of that lives in one app either. The plan is a project made of several small apps, each pinned to its own sub-URL, each responsible for exactly one thing against the same shared composition: one for color grading, one for audio, and so on. A dedicated audio engine sits inside the main rendering engine itself for that reason, full control over audio and how it locks to the visuals, not audio as an afterthought bolted onto a video track. It's not a new idea for this engine, either. v1 already had a working plugin system, custom elements with their own rendering, their own styling, their own libraries, dropped into the engine like any built-in element. The multi-app version is that same idea taken further: extend the engine by building next to it, not by rewriting it.
+
+None of this works without the part that's already built. Every idea here assumes a base that's fast, stable, and produces results you can actually trust, frame after frame, video after video. That's what the last year went into. The rest, the editor, the automation canvas, the AI writing its own compositions, is what gets to exist now that the foundation underneath it is solid.
+
+I started this because nothing like it existed and building it myself felt like the only honest option. What's built now is the hard, boring, unglamorous part: an engine that renders video fast, correctly, and without falling over. Everything in this section is what gets to happen next, because that part is finally done.

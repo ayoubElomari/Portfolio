@@ -1,0 +1,168 @@
+footer {
+  .personal-info-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    height: 248px;
+
+    .info-section {
+      height: 100%;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 72px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      font-family: var(--secondary-font);
+
+      &:not(:last-child) {
+        border-right: 1px solid var(--border-color);
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--third-color);
+        text-transform: uppercase;
+      }
+      .section-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 20px;
+        font-weight: 400;
+      }
+
+      &.contact-info {
+        .section-content {
+          a {
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.3s var(--easing);
+          }
+          .accent {
+            color: var(--accent-color);
+          }
+        }
+      }
+      &.social-links-info {
+        .section-content .social-links {
+          display: flex;
+          gap: 12px;
+
+          /* The circle used to be a <button> nested inside this anchor —
+             invalid nesting, and it left the link with no accessible name.
+             The anchor now carries the styling directly. */
+          a {
+            text-decoration: none;
+            width: 48px;
+            height: 48px;
+            background-color: transparent;
+            border: 1px solid var(--third-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition:
+              background-color 0.2s,
+              border-color 0.2s;
+
+            svg path {
+              fill: var(--primary-color);
+              transition: fill 0.3s;
+            }
+
+            &:hover,
+            &:focus-visible {
+              background-color: var(--accent-color);
+              border-color: var(--accent-color);
+
+              svg path {
+                fill: var(--bg-color);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 72px;
+    height: 72px;
+    /* Hosts the drifting BgPattern: relative to anchor its absolute
+       container, hidden because the pattern is two 150%-wide copies side by
+       side and would otherwise widen the page. */
+    position: relative;
+    overflow: hidden;
+
+    .copyright {
+      font-size: 14px;
+      font-family: var(--secondary-font);
+      color: var(--secondary-color);
+    }
+
+    .navigation {
+      display: flex;
+      gap: 32px;
+
+      a {
+        text-decoration: none;
+        text-transform: uppercase;
+        color: var(--secondary-color);
+        font-size: 16px;
+        font-weight: 300;
+        letter-spacing: 0.14em;
+        position: relative;
+
+        &::after {
+          content: "";
+          display: block;
+          width: 0;
+          height: 1px;
+          background-color: var(--secondary-color);
+          margin-top: -4px;
+          transition: width 0.3s var(--easing);
+        }
+
+        &:hover::after {
+          width: 100%;
+        }
+      }
+    }
+    .go-to-top {
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+  }
+
+  @media screen and (max-width: 1199px) {
+    .personal-info-container {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      width: 100%;
+
+      .info-section {
+        padding: 32px 20px;
+      }
+    }
+
+    .footer-bottom {
+      padding: 20px;
+      height: auto;
+
+      .navigation {
+        display: none;
+      }
+      .go-to-top {
+        display: none;
+      }
+    }
+  }
+}
