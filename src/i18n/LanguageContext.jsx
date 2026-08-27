@@ -11,20 +11,12 @@ import fr from "./fr.json";
 
 const STORAGE_KEY = "portfolio-lang";
 export const SUPPORTED_LOCALES = ["en", "fr"];
-const DEFAULT_LOCALE = "en";
+const DEFAULT_LOCALE = "fr";
 const dictionaries = { en, fr };
 
 function detectInitialLocale() {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
-
-  const browserLocales = window.navigator.languages || [
-    window.navigator.language,
-  ];
-  for (const lang of browserLocales) {
-    const short = String(lang).slice(0, 2).toLowerCase();
-    if (SUPPORTED_LOCALES.includes(short)) return short;
-  }
 
   return DEFAULT_LOCALE;
 }
