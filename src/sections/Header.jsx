@@ -46,7 +46,7 @@ function Header({ hideOnScroll }) {
     <header className={hidden ? "hidden" : ""}>
       <div className="header-container">
         <Link to="/" className="logo-name">
-          AYOUB.
+          AYOUB
         </Link>
         <button
           type="button"
