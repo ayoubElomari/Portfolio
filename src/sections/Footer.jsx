@@ -6,9 +6,6 @@ import BgPattern from "../pages/components/BgPattern";
 import "./style/Footer.scss";
 
 import ArrowUpIcon from "../assets/arrow-up.svg?react";
-/* Restore alongside the commented-out LinkedIn link below, once there's a
-   real profile URL. Left out for now so it isn't an unused import. */
-// import LinkedInIcon from "../assets/socials/linkedin.svg?react";
 import EmailIcon from "../assets/socials/email.svg?react";
 import GitHubIcon from "../assets/socials/github.svg?react";
 
@@ -45,21 +42,8 @@ function Footer() {
           <div className="section-content">
             {/* These were `<a href="">` wrapping a `<button>` — an empty href
                 reloads the current page, and nesting a button inside an
-                anchor is invalid. Now plain anchors with accessible names.
-                Restore the LinkedIn entry below once there's a real profile
-                URL to point at; a placeholder is worse than an absence. */}
+                anchor is invalid. Now plain anchors with accessible names. */}
             <div className="social-links">
-              {/*
-              <a
-                href="https://www.linkedin.com/in/"
-                className="link"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={t("footer.linkedinLabel")}
-              >
-                <LinkedInIcon />
-              </a>
-              */}
               <a
                 href={GITHUB_URL}
                 className="link"
