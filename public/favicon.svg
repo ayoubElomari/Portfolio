@@ -8,7 +8,7 @@
 >
   <!-- Matches the header's `AYOUB.` logotype: cream A on black, accent dot.
        Colours are hard-coded because a favicon can't read the page's CSS
-       custom properties — if --accent-color or --primary-color change in
+       custom properties (accent-color, primary-color) — if those change in
        src/index.css, update #fa4e26 / #faeada here by hand. -->
   <rect width="64" height="64" fill="#000000" />
   <path
