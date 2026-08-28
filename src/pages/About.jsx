@@ -80,6 +80,7 @@ function About() {
           <img
             ref={portraitRef}
             className={"rdr2-grade" + (portraitReady ? " rdr2-grade-in" : "")}
+            draggable="false"
             src={pfp}
             alt={t("about.portraitAlt")}
             onLoad={() => setPortraitReady(true)}
