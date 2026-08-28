@@ -8,11 +8,7 @@ import "./style/page.scss";
     file. */}
 import { LazyBench } from "./live-demos";
 import { SHORT_BY_RATIO, DEFAULT_RATIO, POSTER_FRAME } from "./compositions/short.js";
-import { FrameIndependence } from "./visuals/FrameIndependence.jsx";
-import { RenderFarm } from "./visuals/RenderFarm.jsx";
-import { ShortEmbed } from "./visuals/ShortEmbed.jsx";
-import { V1RoundTrip } from "./visuals/V1RoundTrip.jsx";
-import { CapturePath } from "./visuals/CapturePath.jsx";
+import LazyVisual from "./visuals/LazyVisual.jsx";
 import { LazyMediumDemo, LazyMiniDemo } from "./live-demos";
 import { mediumVideo } from "./compositions/mediumVideo.js";
 import { miniKeyframes, EASING_NAMES } from "./compositions/miniKeyframes.js";
@@ -103,7 +99,7 @@ Rendr is a rendering engine. It takes a JSON file, a composition describing clip
 Every element in a composition, a clip, a caption, a title, is a self-contained object with its own timeline. Ask for frame 400 and Rendr doesn't need frame 399 first: it reads the composition, works out what every element looks like at that exact millisecond, and draws it. That's what makes it fast. Nothing waits on anything else, so frames render independently, in parallel, across as many threads as you give it.
 
 <Frame plain label="Frame independence" caption="Any frame can be drawn on its own, in any order, without the frames before it.">
-  <FrameIndependence />
+  <LazyVisual loader={() => import("./visuals/FrameIndependence.jsx")} skeleton="frame-independence" />
 </Frame>
 
 <p className="rendr-summary-label">History</p>
@@ -147,7 +143,7 @@ Capture was the first problem, and the solution was blunt on purpose. Puppeteer 
 It worked. That part matters more than it sounds like it should. But it was slow in a way that compounds. Roughly 70 milliseconds just to capture one frame, before FFmpeg had even started doing its own job downstream. Multiply that across every frame of every video, across every channel running at once, and the cost stops being a rounding error.
 
 <Frame plain label="The v1 round trip" caption="Video became text going in, frames became images coming out, and both conversions are gone by v2.">
-  <V1RoundTrip />
+  <LazyVisual loader={() => import("./visuals/V1RoundTrip.jsx")} skeleton="v1-round-trip" />
 </Frame>
 
 Video was the harder half of the problem, and there wasn't a clean answer for it yet. Decoding a clip live, inside the browser, frame by frame, wasn't something I knew how to do at the time. WebCodecs wasn't a tool in the kit. So the clips got handled before the browser ever opened, not inside it.
@@ -169,7 +165,7 @@ v1.3.1 was the version that actually shipped. Not shipped as in demoed, shipped 
 The system was called Shorts Engine, and the loop was simple to describe and genuinely satisfying to watch run. It pulled posts from Reddit, filtered down to the ones that were actually interesting, split the good ones into parts, and ran each part through an AI model with a system prompt and a user prompt to turn it into a script. From there it assembled everything, the script, the timing, the visuals, into a JSON composition, handed that composition to Rendr, and posted the finished video straight to YouTube through the API. No human in the loop, start to finish.
 
 <Frame label="Real output" caption="One of the videos that loop posted, still up on the channel. A Reddit thread, gameplay footage, a voice over and word-synced captions, assembled and published without anyone touching it.">
-  <ShortEmbed />
+  <LazyVisual loader={() => import("./visuals/ShortEmbed.jsx")} skeleton="short-embed" />
 </Frame>
 
 It ran across roughly four channels, five videos a day each, for about a month and a half. I deployed a cloud version with its own reboot and recovery logic, so if something crashed at 3am it would come back on its own, and it pushed a notification straight to my phone if it ever failed for real. I ran this while I was traveling in Morocco for two weeks, checking in from my phone between everything else I was doing, watching videos get scripted, rendered, and posted without me anywhere near a keyboard. It was the first time automation felt real to me instead of theoretical. Genuinely one of the best feelings I've had building anything.
@@ -187,7 +183,7 @@ The answer was to stop using a browser I didn't control and build one I did. CEF
 The mechanism, once it worked, was almost embarrassingly simple compared to what it replaced. Request a frame from the CEF instance, and instead of encoding that frame as an image, it copies the raw pixel buffer straight into a slot of shared memory<sup className="ref">3</sup>, memory both the browser process and the Node.js process can read from directly, no serialization in between. CEF sends back a signal saying the frame is ready. Node reads that memory slot and hands it straight to FFmpeg. No PNG, no decode step, no round trip through disk or a network socket. Just pixels, moving from one process to another as fast as memory allows.
 
 <Frame plain label="Capture path" caption="The screenshot and its PNG encode are gone, so a frame reaches the encoder as raw pixels instead of being turned into an image first.">
-  <CapturePath />
+  <LazyVisual loader={() => import("./visuals/CapturePath.jsx")} skeleton="capture-path" />
 </Frame>
 
 <Callout tone="accent" title="Terms">
@@ -231,7 +227,7 @@ Frame independence isn't just an optimization. It's what makes the next version 
 It also means the work doesn't have to be split evenly. A video is rarely uniform: a few seconds of heavy compositing scattered between long, cheap stretches. Route the expensive frame groups to a powerful machine and let cheaper machines chew through the rest, or handle the orchestration itself. Pay for horsepower only on the frames that actually need it, instead of running the whole video on the most expensive machine you own. At scale, that's not a small saving, it's the difference between a render farm that's viable and one that isn't.
 
 <Frame plain bleed="wide" label="Uneven split" caption="The short, expensive stretch goes to a bigger machine while the cheap ones run in parallel, and every result lands back in order.">
-  <RenderFarm />
+  <LazyVisual loader={() => import("./visuals/RenderFarm.jsx")} skeleton="render-farm" />
 </Frame>
 
 The next piece of that, still ahead: a calculator that reads a composition before a single frame renders and estimates the cost, time, and memory each frame group will take. Know the bill before you pay it, and route accordingly. It's not built yet, but it's the natural next step once you've already committed to frames that don't depend on each other.

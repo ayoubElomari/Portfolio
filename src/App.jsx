@@ -1,17 +1,29 @@
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 
 import Header from "./sections/Header";
 import Footer from "./sections/Footer";
 import Toast from "./sections/Toast";
-import Home from "./pages/Home";
-import Project from "./pages/Project";
-import Beyond from "./pages/Beyond";
-import BeyondEntry from "./pages/BeyondEntry";
-import About from "./pages/About";
-import Resume from "./pages/Resume";
+import RouteFallback from "./sections/RouteFallback";
 import NotFound from "./pages/NotFound";
 import { useLanguage } from "./i18n/LanguageContext.jsx";
+
+/* Every page is its own chunk, fetched when its route first renders.
+   This isn't just about page weight: `Project`/`BeyondEntry`/`Home` reach
+   `lib/projects.js` and `lib/beyond.js`, which `import.meta.glob` every case
+   study's MDX with `eager: true` so `meta` is available synchronously for
+   listings, the hero counter and prev/next nav. Static imports here put all
+   of that in the entry graph, so visiting `/about` downloaded every
+   project's `page.en.mdx` *and* `page.fr.mdx`. Keep these lazy.
+
+   `NotFound` stays a static import — it's tiny, and the catch-all shouldn't
+   need a network round trip to tell someone their URL is wrong. */
+const Home = lazy(() => import("./pages/Home"));
+const Project = lazy(() => import("./pages/Project"));
+const Beyond = lazy(() => import("./pages/Beyond"));
+const BeyondEntry = lazy(() => import("./pages/BeyondEntry"));
+const About = lazy(() => import("./pages/About"));
+const Resume = lazy(() => import("./pages/Resume"));
 
 /* Pages that redirect away when the requested content has no translation in
    the active locale hand the reason over in router state; each one maps to
@@ -79,18 +91,20 @@ function App() {
           Any future sibling selector reaching from the chrome to a page needs
           the same `main` step. */}
       <main id="main">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/resume" element={<Resume />} />
-          <Route path="/project/:slug" element={<Project />} />
-          <Route path="/beyond" element={<Beyond />} />
-          <Route path="/beyond/:slug" element={<BeyondEntry />} />
-          {/* Real 404 rather than a silent redirect home — a bad URL that
-              quietly becomes the homepage hides typos and broken inbound
-              links. Declared last, where a catch-all reads naturally. */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/resume" element={<Resume />} />
+            <Route path="/project/:slug" element={<Project />} />
+            <Route path="/beyond" element={<Beyond />} />
+            <Route path="/beyond/:slug" element={<BeyondEntry />} />
+            {/* Real 404 rather than a silent redirect home — a bad URL that
+                quietly becomes the homepage hides typos and broken inbound
+                links. Declared last, where a catch-all reads naturally. */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
       <Footer />
     </>

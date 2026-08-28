@@ -9,8 +9,7 @@ import accentIcon from "../../../assets/accent-icon.svg";
 import ArrowRightIcon from "../../../assets/arrow-right.svg?react";
 
 /* The topic categories the /beyond page groups its ideas into. Still a
-   hardcoded list rather than one derived from the real entries — see the
-   "Make Home Beyond banner tags dynamic" task in `todo.claude.md`. Keep it
+   hardcoded list rather than one derived from the real entries. Keep it
    in sync with `TAG_ORDER` in `src/pages/Beyond.jsx`; both read their labels
    from the same `home.beyond.tags.*` keys. */
 const TAGS = ["infrastructure", "automation"];

@@ -8,11 +8,7 @@ import "./style/page.scss";
     file. */}
 import { LazyBench } from "./live-demos";
 import { SHORT_BY_RATIO, DEFAULT_RATIO, POSTER_FRAME } from "./fr/compositions/short.js";
-import { FrameIndependence } from "./visuals/FrameIndependence.jsx";
-import { RenderFarm } from "./visuals/RenderFarm.jsx";
-import { ShortEmbed } from "./visuals/ShortEmbed.jsx";
-import { V1RoundTrip } from "./visuals/V1RoundTrip.jsx";
-import { CapturePath } from "./visuals/CapturePath.jsx";
+import LazyVisual from "./visuals/LazyVisual.jsx";
 import { LazyMediumDemo, LazyMiniDemo } from "./live-demos";
 import { mediumVideo } from "./fr/compositions/mediumVideo.js";
 import { miniKeyframes, EASING_NAMES } from "./fr/compositions/miniKeyframes.js";
@@ -195,7 +191,9 @@ Rendr est un moteur de rendu. Il prend un fichier JSON, une composition qui déc
 Chaque élément d'une composition, un clip, une légende, un titre, est un objet autonome avec sa propre timeline. Demandez la frame 400, Rendr n'a pas besoin de la frame 399 avant : il lit la composition, calcule à quoi ressemble chaque élément à cette milliseconde précise, et le dessine. C'est ce qui le rend rapide. Rien n'attend rien d'autre, donc les frames se rendent indépendamment, en parallèle, sur autant de threads qu'on lui donne.
 
 <Frame plain label="Indépendance des frames" caption="N'importe quelle frame peut être dessinée seule, dans n'importe quel ordre, sans les frames qui la précèdent.">
-  <FrameIndependence
+  <LazyVisual
+    loader={() => import("./visuals/FrameIndependence.jsx")}
+    skeleton="frame-independence"
     labels={{
       micro: "TIMELINE DE LA COMPOSITION",
       srText:
@@ -245,7 +243,9 @@ La capture était le premier problème, et la solution était volontairement bru
 Ça marchait. Ce détail compte plus qu'il n'y paraît. Mais c'était lent d'une façon qui s'accumule. À peu près 70 millisecondes rien que pour capturer une frame, avant même que FFmpeg commence son propre travail. Multipliez ça par chaque frame de chaque vidéo, par chaque chaîne qui tourne en même temps, et le coût cesse d'être une erreur d'arrondi.
 
 <Frame plain label="L'aller-retour de la v1" caption="La vidéo devenait du texte à l'entrée, les frames devenaient des images à la sortie, et les deux conversions ont disparu avec la v2.">
-  <V1RoundTrip
+  <LazyVisual
+    loader={() => import("./visuals/V1RoundTrip.jsx")}
+    skeleton="v1-round-trip"
     labels={{
       browser: "navigateur",
       srText:
@@ -273,7 +273,9 @@ La v1.3.1 est la version qui a vraiment tourné en vrai, pas juste démontrée. 
 Le système s'appelait Shorts Engine, et la boucle était simple à décrire et vraiment satisfaisante à regarder tourner. Il récupérait des posts Reddit, filtrait ceux qui étaient réellement intéressants, découpait les bons en plusieurs parties, et faisait passer chaque partie dans un modèle d'IA avec un prompt système et un prompt utilisateur pour en tirer un script. À partir de là, il assemblait tout, le script, le minutage, les visuels, en une composition JSON, la donnait à Rendr, et postait la vidéo finie directement sur YouTube via l'API. Aucun humain dans la boucle, du début à la fin.
 
 <Frame label="Résultat réel" caption="Une des vidéos publiées par cette boucle, toujours en ligne sur la chaîne. Un thread Reddit, des images de gameplay, une voix off et des sous-titres synchronisés au mot, assemblés et publiés sans que personne n'y touche.">
-  <ShortEmbed
+  <LazyVisual
+    loader={() => import("./visuals/ShortEmbed.jsx")}
+    skeleton="short-embed"
     title="Une vidéo Shorts Engine, toujours sur la chaîne"
     playLabel="Lecture"
   />
@@ -294,7 +296,9 @@ La réponse a été d'arrêter d'utiliser un navigateur que je ne contrôlais pa
 Le mécanisme, une fois en place, était presque gênant de simplicité comparé à ce qu'il remplaçait. On demande une frame à l'instance CEF, et au lieu de l'encoder en image, elle copie le buffer de pixels brut directement dans un emplacement de mémoire partagée<sup className="ref">3</sup>, une mémoire que le processus navigateur et le processus Node.js peuvent tous les deux lire directement, sans sérialisation entre les deux. CEF renvoie un signal disant que la frame est prête. Node lit cet emplacement mémoire et le passe directement à FFmpeg. Pas de PNG, pas d'étape de décodage, pas d'aller-retour par le disque ou par un socket réseau. Juste des pixels, qui passent d'un processus à l'autre aussi vite que la mémoire le permet.
 
 <Frame plain label="Le chemin de capture" caption="Le screenshot et son encodage PNG ont disparu, une frame arrive donc à l'encodeur sous forme de pixels bruts au lieu d'être d'abord transformée en image.">
-  <CapturePath
+  <LazyVisual
+    loader={() => import("./visuals/CapturePath.jsx")}
+    skeleton="capture-path"
     labels={{
       screenshot: "screenshot",
       sharedMemory: "mémoire partagée",
@@ -345,7 +349,9 @@ L'indépendance des frames n'est pas juste une optimisation. C'est ce qui rend l
 Ça veut aussi dire que le travail n'a pas besoin d'être réparti à parts égales. Une vidéo est rarement uniforme : quelques secondes de composition lourde éparpillées entre de longs passages bon marché. On peut router les groupes de frames coûteux vers une machine puissante et laisser les machines moins chères s'occuper du reste, ou même gérer l'orchestration elle-même. Payer de la puissance uniquement sur les frames qui en ont vraiment besoin, plutôt que de faire tourner toute la vidéo sur la machine la plus chère qu'on possède. À l'échelle, ce n'est pas une petite économie, c'est la différence entre une ferme de rendu viable et une qui ne l'est pas.
 
 <Frame plain bleed="wide" label="Répartition inégale" caption="Le passage court et coûteux part vers une machine plus puissante pendant que les moins chères tournent en parallèle, et chaque résultat revient dans l'ordre.">
-  <RenderFarm
+  <LazyVisual
+    loader={() => import("./visuals/RenderFarm.jsx")}
+    skeleton="render-farm"
     labels={{
       micro: "COMPOSITION, DÉCOUPÉE EN PLAGES",
       orchestrator: "ORCHESTRATEUR",

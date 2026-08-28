@@ -1,0 +1,73 @@
+.route-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Roughly a screen's worth, minus the header — enough that the footer stays
+     put between the fallback and the real page arriving. */
+  min-height: 70vh;
+  padding: 0 24px;
+}
+
+.route-fallback-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  /* The whole indicator fades in late, so a chunk that resolves in 40ms never
+     paints anything. `both` keeps it at opacity 0 through the delay. */
+  animation: route-fallback-in 0.35s var(--easing) 0.25s both;
+}
+
+.route-fallback-label {
+  font-family: var(--secondary-font);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--third-color);
+}
+
+.route-fallback-track {
+  position: relative;
+  overflow: hidden;
+  width: 120px;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.route-fallback-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background-color: var(--accent-color);
+  animation: route-fallback-sweep 1.1s ease-in-out infinite;
+}
+
+@keyframes route-fallback-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes route-fallback-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+/* Reduced motion keeps the indicator — it's the only signal that anything is
+   happening — but drops it to a static, dimmed rule instead of a sweep. */
+@media (prefers-reduced-motion: reduce) {
+  .route-fallback-inner {
+    animation: none;
+  }
+
+  .route-fallback-bar {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}

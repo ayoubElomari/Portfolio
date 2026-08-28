@@ -60,6 +60,18 @@
         height: 100%;
         object-fit: cover;
         display: block;
+        transform-origin: top;
+        transform: scale(1.25);
+        transition:
+          transform 400ms ease,
+          filter 400ms ease;
+      }
+
+      /* Both custom properties documented as tunable overrides in
+         index.css (see `.rdr2-grade`) — softened here rather than at
+         rest, so hovering reads as the photo relaxing out of the grade. */
+      &:hover img {
+        transform: scale(1.2);
       }
     }
 
@@ -414,9 +426,14 @@
       align-items: flex-start;
       gap: 24px;
 
+      /* Same 4/5 portrait shape as desktop, not a full-bleed landscape
+         crop — the source photo is portrait-oriented, so a wide 3/2 box
+         was fighting the image instead of framing it. Width matches the
+         "Narrow" breakpoint's card size rather than stretching full-width,
+         which would otherwise shove the name/bio far down the page. */
       .masthead-portrait {
-        width: 100%;
-        aspect-ratio: 3 / 2;
+        width: 240px;
+        aspect-ratio: 4 / 5;
       }
       .masthead-text .masthead-name {
         font-size: 42px;

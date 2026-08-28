@@ -24,8 +24,6 @@ const gallery = Object.keys(galleryModules)
 
 const META = ["location", "status", "focus"];
 
-/* NOTE: every string here is placeholder copy, living under home.hero.* in
-   the dictionaries — replace with real details before launch. */
 function Hero() {
   const { t } = useLanguage();
 

@@ -10,13 +10,18 @@ import { useEffect, useState } from "react";
  * **The timer is a correctness requirement, not padding.** `IntersectionObserver`
  * callbacks are suppressed outright in some contexts — a backgrounded tab,
  * certain embeds — and without a fallback the demo would never appear at all.
- * Late is fine; never is not.
+ * Late is fine; never is not — which is also why this is 8s and not 2.5s: on a
+ * page with a tall hero, the demo can genuinely sit outside `margin` at scroll
+ * position 0, and the observer just hasn't had a chance to fire yet. A short
+ * timer was winning that race on every load, forcing several demos to boot at
+ * once regardless of whether the reader had scrolled anywhere near them —
+ * the opposite of what this hook is for.
  *
  * Lives in its own file so it isn't a reason to import anything heavier.
  */
 export default function useNearViewport(
   ref,
-  { margin = "300px", fallbackMs = 2500 } = {},
+  { margin = "300px", fallbackMs = 8000 } = {},
 ) {
   const [near, setNear] = useState(false);
 
