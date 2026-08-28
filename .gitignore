@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 .claude
+.ignore
 node_modules
 dist
 dist-ssr

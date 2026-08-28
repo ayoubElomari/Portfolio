@@ -4,6 +4,7 @@ import ScaleLadder from "./components/ScaleLadder.jsx";
 import SystemFlow from "./components/SystemFlow.jsx";
 import ChannelCompare from "./components/ChannelCompare.jsx";
 import ProductionTimeline from "./components/ProductionTimeline.jsx";
+import RepoCard from "./components/RepoCard.jsx";
 import { LazyMediumDemo } from "./live-demos";
 import { demoComposition, demoEdits } from "./compositions/demo.js";
 
@@ -161,3 +162,9 @@ The same three pieces, bots, render engine, publishing, don't care about the num
 At real scale, that's hundreds of channels, each with its own niche, its own voice, its own audience, running off one base, producing thousands of videos a day, managed from a single dashboard instead of a config file: add channels, watch performance, run A/B tests against real traffic, bring on a new platform without touching what already works. Put the whole thing on a server with a GPU, and the same hardware doing the rendering can run local models watching over all of it: catching problems, surfacing what's actually working, flagging decisions instead of quietly failing until someone happens to check.
 
 ### That version was never built. What ran for three months is the proof that the shape underneath it holds.
+
+<RepoCard
+  href="https://github.com/ayoubElomari/shorts-engine"
+  label="Source"
+  name="ayoubElomari/shorts-engine"
+/>

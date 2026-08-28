@@ -2,6 +2,7 @@ import cover from "./assets/cover.svg";
 import { rendrStyle } from "./theme.js";
 
 import "./style/page.scss";
+import RepoCard from "./components/RepoCard.jsx";
 
 {/* Not the bench itself: `LazyBench` code-splits it, so neither the editor UI
     nor the engine is in this page's initial chunk. See the note in that
@@ -261,3 +262,18 @@ None of that lives in one app either. The plan is a project made of several smal
 None of this works without the part that's already built. Every idea here assumes a base that's fast, stable, and produces results you can actually trust, frame after frame, video after video. That's what the last year went into. The rest, the editor, the automation canvas, the AI writing its own compositions, is what gets to exist now that the foundation underneath it is solid.
 
 I started this because nothing like it existed and building it myself felt like the only honest option. What's built now is the hard, boring, unglamorous part: an engine that renders video fast, correctly, and without falling over. Everything in this section is what gets to happen next, because that part is finally done.
+
+
+
+<RepoCard
+
+  href="https://github.com/ayoubElomari/rendr-beta-v1.3.1"
+
+  label="Source"
+
+  name="ayoubElomari/rendr-beta-v1.3.1"
+
+  note="Only v1.3.1, the version described above, is public. v2, the engine actually running the live demos on this page, is closed source."
+
+/>
+

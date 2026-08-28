@@ -4,6 +4,7 @@ import ScaleLadder from "./components/ScaleLadder.jsx";
 import SystemFlow from "./components/SystemFlow.jsx";
 import ChannelCompare from "./components/ChannelCompare.jsx";
 import ProductionTimeline from "./components/ProductionTimeline.jsx";
+import RepoCard from "./components/RepoCard.jsx";
 import { LazyMediumDemo } from "./live-demos";
 import { buildComposition, demoEdits } from "./compositions/demo.js";
 
@@ -251,3 +252,9 @@ Les trois mêmes briques, bots, moteur de rendu, publication, se moquent du nomb
 À la vraie échelle, ça donne des centaines de chaînes, chacune avec sa propre niche, sa propre voix, son propre public, tournant sur une seule base, produisant des milliers de vidéos par jour, gérées depuis un seul tableau de bord au lieu d'un fichier de config : ajouter des chaînes, suivre les performances, lancer des tests A/B contre du vrai trafic, brancher une nouvelle plateforme sans toucher à ce qui marche déjà. Mets tout ça sur un serveur avec un GPU, et le même matériel qui fait le rendu peut faire tourner des modèles locaux qui surveillent l'ensemble : repérer les problèmes, faire remonter ce qui marche vraiment, signaler des décisions au lieu d'échouer en silence jusqu'à ce que quelqu'un pense à vérifier.
 
 ### Cette version-là n'a jamais été construite. Ce qui a tourné pendant trois mois, c'est la preuve que la structure en dessous tient.
+
+<RepoCard
+  href="https://github.com/ayoubElomari/shorts-engine"
+  label="Code source"
+  name="ayoubElomari/shorts-engine"
+/>

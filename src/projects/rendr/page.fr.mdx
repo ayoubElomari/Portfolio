@@ -2,6 +2,7 @@ import cover from "./assets/cover.svg";
 import { rendrStyle } from "./theme.js";
 
 import "./style/page.scss";
+import RepoCard from "./components/RepoCard.jsx";
 
 {/* Not the bench itself: `LazyBench` code-splits it, so neither the editor UI
     nor the engine is in this page's initial chunk. See the note in that
@@ -392,3 +393,18 @@ Rien de tout ça ne vit non plus dans une seule application. Le plan, c'est un p
 Rien de tout ça ne fonctionne sans la partie déjà construite. Chaque idée ici part du principe qu'on a une base rapide, stable, et qui produit des résultats en qui on peut vraiment avoir confiance, frame après frame, vidéo après vidéo. C'est là qu'est passée la dernière année. Le reste, l'éditeur, le canevas d'automatisation, l'IA qui écrit ses propres compositions, c'est ce qui peut désormais exister parce que les fondations en dessous sont solides.
 
 J'ai commencé ça parce que rien de tel n'existait et que le construire moi-même me semblait la seule option honnête. Ce qui est construit aujourd'hui, c'est la partie difficile, ennuyeuse, sans gloire : un moteur qui rend de la vidéo vite, correctement, sans jamais tomber. Tout ce qu'il y a dans cette section, c'est ce qui peut arriver maintenant, parce que cette partie-là est enfin terminée.
+
+
+
+<RepoCard
+
+  href="https://github.com/ayoubElomari/rendr-beta-v1.3.1"
+
+  label="Code source"
+
+  name="ayoubElomari/rendr-beta-v1.3.1"
+
+  note="Seule la v1.3.1, la version décrite plus haut, est publique. La v2, le moteur qui fait vraiment tourner les démos en direct sur cette page, est à code source fermé."
+
+/>
+
