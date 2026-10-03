@@ -1,8 +1,8 @@
 /**
- * The closing card of the case study: one link out to the source, nothing
- * else. `note` carries the one caveat this project needs — that only v1.3.1
- * is public, v2 is closed source — so it stays a prop rather than a second
- * hardcoded string per locale.
+ * A closing card of the case study: one link out to a repository, nothing
+ * else. `note` carries the caveat each repo needs (what part of Rendr it is,
+ * and what is not public), so it stays a prop rather than a hardcoded string
+ * per locale.
  *
  * Locale-agnostic by contract: every string arrives as a prop from
  * `page.<locale>.mdx`.

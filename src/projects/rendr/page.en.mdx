@@ -25,9 +25,9 @@ export const meta = {
   duration: "1 yr",
   date: "2026-08-21",
   stats: [
-    { label: "Single thread", value: "500 fps" },
+    { label: "Single thread, capture", value: "500 fps" },
     { label: "8 threads, theoretical", value: "2,500 fps" },
-    { label: "30s clip @ 30fps", value: "~0.36s" },
+    { label: "30s clip @ 30fps, theoretical", value: "~0.36s" },
     { label: "Architecture", value: "Frame-independent" },
   ],
   style: rendrStyle,
@@ -113,7 +113,7 @@ v2 was a full rewrite: a cleaner codebase, a more refined architecture, and a ge
 
 <Facts variant="cards">
   <Fact label="Frame purity" value="100%" note="Every pixel of a rendered frame checked against a known test color, none off" />
-  <Fact label="Single-thread speed" value="500 fps" />
+  <Fact label="Single-thread capture speed" value="500 fps" />
   <Fact label="Preprocessing needed" value="Zero" note="Video decodes natively inside the browser, nothing baked in before render starts" />
 </Facts>
 
@@ -169,7 +169,7 @@ The system was called Shorts Engine, and the loop was simple to describe and gen
   <LazyVisual loader={() => import("./visuals/ShortEmbed.jsx")} skeleton="short-embed" />
 </Frame>
 
-It ran across roughly four channels, five videos a day each, for about a month and a half. I deployed a cloud version with its own reboot and recovery logic, so if something crashed at 3am it would come back on its own, and it pushed a notification straight to my phone if it ever failed for real. I ran this while I was traveling in Morocco for two weeks, checking in from my phone between everything else I was doing, watching videos get scripted, rendered, and posted without me anywhere near a keyboard. It was the first time automation felt real to me instead of theoretical. Genuinely one of the best feelings I've had building anything.
+It ran across three channels for about three months, 417 videos in all. I deployed a cloud version with its own reboot and recovery logic, so if something crashed at 3am it would come back on its own, and it pushed a notification straight to my phone if it ever failed for real. I ran this while I was traveling in Morocco for two weeks, checking in from my phone between everything else I was doing, watching videos get scripted, rendered, and posted without me anywhere near a keyboard. It was the first time automation felt real to me instead of theoretical. Genuinely one of the best feelings I've had building anything.
 
 It didn't last, but not because the renderer failed. The channels got shadow-banned, quality-nerfed by whatever was watching for bot behavior on the platform side, probably flagged from day one given how fast they were posting. Views dropped from a real audience down to a couple per video, and there wasn't a way to fight that from the outside.
 
@@ -266,14 +266,16 @@ I started this because nothing like it existed and building it myself felt like 
 
 
 <RepoCard
+  href="https://github.com/ayoubElomari/Rendr-Web"
+  label="Source, v2 runtime"
+  name="ayoubElomari/Rendr-Web"
+  note="The browser half of v2, the same runtime running the live demos on this page, with runnable examples. Readable, not reusable: see the license. The CEF capture and encoding pipeline is closed source."
+/>
 
+<RepoCard
   href="https://github.com/ayoubElomari/rendr-beta-v1.3.1"
-
-  label="Source"
-
+  label="Source, v1"
   name="ayoubElomari/rendr-beta-v1.3.1"
-
-  note="Only v1.3.1, the version described above, is public. v2, the engine actually running the live demos on this page, is closed source."
-
+  note="The Puppeteer-era beta described above, the version that ran Shorts Engine. v2 has since replaced it."
 />
 

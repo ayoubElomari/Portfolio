@@ -25,9 +25,9 @@ export const meta = {
   duration: "1 an",
   date: "2026-08-21",
   stats: [
-    { label: "Un seul thread", value: "500 fps" },
+    { label: "Un seul thread, capture", value: "500 fps" },
     { label: "8 threads, en théorie", value: "2 500 fps" },
-    { label: "Clip de 30s à 30fps", value: "~0,36s" },
+    { label: "Clip de 30s à 30fps, en théorie", value: "~0,36s" },
     { label: "Architecture", value: "Frames indépendantes" },
   ],
   style: rendrStyle,
@@ -213,7 +213,7 @@ La v2 était une réécriture complète : une base de code plus propre, une arch
 
 <Facts variant="cards">
   <Fact label="Pureté des frames" value="100%" note="Chaque pixel d'une frame rendue vérifié contre une couleur de test connue, aucun écart" />
-  <Fact label="Vitesse sur un thread" value="500 fps" />
+  <Fact label="Vitesse de capture sur un thread" value="500 fps" />
   <Fact label="Prétraitement nécessaire" value="Zéro" note="La vidéo se décode nativement dans le navigateur, rien n'est précuit avant que le rendu commence" />
 </Facts>
 
@@ -282,7 +282,7 @@ Le système s'appelait Shorts Engine, et la boucle était simple à décrire et 
   />
 </Frame>
 
-Ça tournait sur environ quatre chaînes, cinq vidéos par jour chacune, pendant à peu près un mois et demi. J'avais déployé une version cloud avec sa propre logique de redémarrage et de récupération, donc si quelque chose plantait à 3h du matin, ça repartait tout seul, et ça m'envoyait une notification sur le téléphone en cas de vrai échec. J'ai fait tourner tout ça pendant que je voyageais au Maroc deux semaines, en vérifiant depuis mon téléphone entre deux activités, en regardant des vidéos se scripter, se rendre et se poster sans que je touche à un clavier. C'était la première fois que l'automatisation me semblait réelle plutôt que théorique. Franchement l'une des meilleures sensations que j'aie eues en construisant quelque chose.
+Ça tournait sur trois chaînes pendant environ trois mois, 417 vidéos au total. J'avais déployé une version cloud avec sa propre logique de redémarrage et de récupération, donc si quelque chose plantait à 3h du matin, ça repartait tout seul, et ça m'envoyait une notification sur le téléphone en cas de vrai échec. J'ai fait tourner tout ça pendant que je voyageais au Maroc deux semaines, en vérifiant depuis mon téléphone entre deux activités, en regardant des vidéos se scripter, se rendre et se poster sans que je touche à un clavier. C'était la première fois que l'automatisation me semblait réelle plutôt que théorique. Franchement l'une des meilleures sensations que j'aie eues en construisant quelque chose.
 
 Ça n'a pas duré, mais pas à cause du moteur de rendu. Les chaînes se sont fait shadowban, dégradées en qualité par ce qui, côté plateforme, surveillait les comportements de bot, probablement repérées dès le premier jour vu le rythme de publication. Les vues sont tombées d'une vraie audience à deux par vidéo, et il n'y avait aucun moyen de se battre contre ça de l'extérieur.
 
@@ -397,14 +397,16 @@ J'ai commencé ça parce que rien de tel n'existait et que le construire moi-mê
 
 
 <RepoCard
+  href="https://github.com/ayoubElomari/Rendr-Web"
+  label="Code source, runtime v2"
+  name="ayoubElomari/Rendr-Web"
+  note="La moitié navigateur de la v2, le même runtime qui fait tourner les démos en direct sur cette page, avec des exemples exécutables. Lisible, pas réutilisable : voir la licence. Le pipeline de capture CEF et d'encodage reste à code source fermé."
+/>
 
+<RepoCard
   href="https://github.com/ayoubElomari/rendr-beta-v1.3.1"
-
-  label="Code source"
-
+  label="Code source, v1"
   name="ayoubElomari/rendr-beta-v1.3.1"
-
-  note="Seule la v1.3.1, la version décrite plus haut, est publique. La v2, le moteur qui fait vraiment tourner les démos en direct sur cette page, est à code source fermé."
-
+  note="La bêta de l'ère Puppeteer décrite plus haut, celle qui faisait tourner Shorts Engine. La v2 l'a depuis remplacée."
 />
 
