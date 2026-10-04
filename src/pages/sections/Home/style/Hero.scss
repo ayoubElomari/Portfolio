@@ -156,11 +156,28 @@ section.hero-section {
         font-size: 12px;
         color: var(--third-color);
 
-        &::before {
-          content: "";
-          width: 22px;
-          height: 1px;
-          background-color: var(--accent-color);
+        /* Scroll bar: a dim track with the accent thumb at its top. */
+        .hero-hint__bar {
+          flex: none;
+        }
+
+        .hero-hint__track {
+          fill: var(--primary-color);
+          fill-opacity: 0.2;
+        }
+
+        /* The thumb runs down the track and re-enters from the top; the
+           svg viewport clips it at both ends. */
+        .hero-hint__thumb {
+          fill: var(--accent-color);
+          animation: hero-hint-scroll 2.2s cubic-bezier(0.65, 0, 0.35, 1)
+            infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-hint__thumb {
+            animation: none;
+          }
         }
       }
     }
@@ -257,5 +274,14 @@ section.hero-section {
     #hero-center-plus {
       display: none;
     }
+  }
+}
+
+@keyframes hero-hint-scroll {
+  from {
+    transform: translateY(-14px);
+  }
+  to {
+    transform: translateY(34px);
   }
 }

@@ -66,7 +66,21 @@ function Hero() {
         <div className="part-content">
           <p className="hero-description">{t("home.hero.tagline")}</p>
           <p className="hero-blurb">{t("home.hero.blurb")}</p>
-          <span className="hero-hint">{t("home.hero.galleryHint")}</span>
+          <span className="hero-hint">
+            <svg
+              className="hero-hint__bar"
+              width="3"
+              height="34"
+              viewBox="0 0 3 34"
+              fill="none"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <rect className="hero-hint__track" x="0" y="0.5" width="3" height="33" />
+              <rect className="hero-hint__thumb" x="0" y="0.18" width="3" height="14" />
+            </svg>
+            {t("home.hero.galleryHint")}
+          </span>
         </div>
       </div>
 
