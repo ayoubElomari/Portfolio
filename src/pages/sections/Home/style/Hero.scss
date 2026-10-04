@@ -178,6 +178,11 @@ section.hero-section {
           grid-template-columns: repeat(2, 1fr);
           grid-template-rows: repeat(2, 1fr);
           gap: 16px;
+
+          /* First photo is the portrait: it takes the whole left column. */
+          > :first-child {
+            grid-row: span 2;
+          }
         }
       }
     }

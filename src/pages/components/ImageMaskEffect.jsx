@@ -19,7 +19,7 @@ const FOLLOW = 0.15;
    loop — never through React state. Re-rendering four components on every
    mousemove is what made this stutter. Radius is the opposite: it changes
    rarely (hover/open), so it's a plain CSS transition on a registered
-   @property, which is why clip-path itself carries no transition. */
+   @property, which is why the mask itself carries no transition. */
 function ImageMaskEffect({ imageSrc, alt }) {
   const containerRef = useRef(null);
   const target = useRef({ x: 0, y: 0 });
@@ -116,8 +116,6 @@ function ImageMaskEffect({ imageSrc, alt }) {
       <div className="reveal-layer is-graded rdr2-frame" aria-hidden="true">
         <img className="reveal-image rdr2-grade" src={imageSrc} alt="" />
       </div>
-
-      <span className="reveal-ring" aria-hidden="true" />
     </div>
   );
 }
